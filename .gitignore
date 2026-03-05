@@ -1,1 +1,6 @@
 .DS_Store
+*.sto
+*.log
+__pycache__/
+*.pyc
+Geometry/
