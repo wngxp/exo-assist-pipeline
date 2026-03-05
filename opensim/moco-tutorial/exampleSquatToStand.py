@@ -63,8 +63,8 @@ if not os.path.isfile('predictSolution.sto'):
     # Part 1f: Solve! Write the solution to file, and visualize.
     predictSolution = study.solve()
     predictSolution.write('predictSolution.sto')
-    # study.visualize(predictSolution)
-    print('Solved! Objective:', predictSolution.getObjective())
+    study.visualize(predictSolution)
+    # print('Solved! Objective:', predictSolution.getObjective())
 
 
 ## Part 2: Torque-driven Tracking Problem
@@ -98,6 +98,7 @@ if not os.path.isfile('trackingSolution.sto'):
     trackingSolution = study.solve()
     trackingSolution.write('trackingSolution.sto')
     study.visualize(trackingSolution)
+    # print('Solved! Objective:', predictSolution.getObjective())
 
 
 ## Part 3: Compare Predictive and Tracking Solutions
