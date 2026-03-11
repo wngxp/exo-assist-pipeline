@@ -174,7 +174,15 @@ def main():
                 new_coord.setName(prefix_name(old_coord.getName()))
                 new_coord.setRangeMin(old_coord.getRangeMin())
                 new_coord.setRangeMax(old_coord.getRangeMax())
-                new_coord.setDefaultValue(0.0)
+                # new_coord.setDefaultValue(0.0)
+                # Default angles to align exo with human (degrees → radians) hardcoded
+                default_angles = {
+                    "J1_R": math.radians(-2.634),
+                    "J2_R": math.radians(15.429),
+                    "J1_L": math.radians(50.927),
+                    "J2_L": math.radians(21.073),
+                }
+                new_coord.setDefaultValue(default_angles.get(ej_name, 0.0))
 
             elif joint_type == "WeldJoint":
                 new_joint = osim.WeldJoint(
