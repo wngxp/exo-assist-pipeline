@@ -1,0 +1,8 @@
+_temp_*
+data/
+*.sto
+!coordinates.sto
+!grf_walk.xml
+optimization_log.csv
+optimization_results.json
+__pycache__/
