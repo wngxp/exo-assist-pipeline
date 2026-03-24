@@ -1,0 +1,1092 @@
+{
+  "best_params": {
+    "peak_torque": 11.987488118674205,
+    "onset_phase": 0.0026791766627696006,
+    "duration": 0.591901541600511
+  },
+  "best_reward": 0.0941252320774772,
+  "total_evaluations": 120,
+  "total_time_min": 225.6480875134468,
+  "log": [
+    {
+      "peak_torque": 8.993428306022466,
+      "onset_phase": 0.07234713976576308,
+      "duration": 0.4971532807151039,
+      "reward": 0.06359039910147682,
+      "effort_reduction_pct": 18.682782486333366,
+      "solve_time": 116.9256443977356,
+      "success": true
+    },
+    {
+      "peak_torque": 11.046059712816051,
+      "onset_phase": 0.05316932505533282,
+      "duration": 0.36487945645762293,
+      "reward": 0.07130220193424505,
+      "effort_reduction_pct": 20.852887990021063,
+      "solve_time": 111.67184162139893,
+      "success": true
+    },
+    {
+      "peak_torque": 11.158425631014783,
+      "onset_phase": 0.25348694583058173,
+      "duration": 0.32957884210975724,
+      "reward": 0.027981108067401974,
+      "effort_reduction_pct": 8.352787881775194,
+      "solve_time": 113.31264209747314,
+      "success": true
+    },
+    {
+      "peak_torque": 9.08512008717193,
+      "onset_phase": 0.01642588375858646,
+      "duration": 0.3301405369644615,
+      "reward": 0.04691393754323277,
+      "effort_reduction_pct": 13.844461105925904,
+      "solve_time": 123.69371056556702,
+      "success": true
+    },
+    {
+      "peak_torque": 8.48392454313207,
+      "onset_phase": 0.1826560489315595,
+      "duration": 0.15851289737279944,
+      "reward": 0.034646539829698945,
+      "effort_reduction_pct": 10.294845582270415,
+      "solve_time": 112.2481324672699,
+      "success": true
+    },
+    {
+      "peak_torque": 6.875424941518054,
+      "onset_phase": 0.01381603956324967,
+      "duration": 0.44713709988929107,
+      "reward": 0.05157663529468681,
+      "effort_reduction_pct": 15.319968645829155,
+      "solve_time": 113.13502168655396,
+      "success": true
+    },
+    {
+      "peak_torque": 6.053529427855974,
+      "onset_phase": 3.28573124953212e-05,
+      "duration": 0.4398674994282646,
+      "reward": 0.03778319361777471,
+      "effort_reduction_pct": 11.36453969685446,
+      "solve_time": 109.39538908004761,
+      "success": true
+    },
+    {
+      "peak_torque": 11.999980395512736,
+      "onset_phase": 0.011241052169813059,
+      "duration": 0.46205217438547624,
+      "reward": 0.08526310045662493,
+      "effort_reduction_pct": 24.84849641814442,
+      "solve_time": 111.44669651985168,
+      "success": true
+    },
+    {
+      "peak_torque": 11.863440999105045,
+      "onset_phase": 0.02504511099512169,
+      "duration": 0.4251753105479337,
+      "reward": 0.08161190031937732,
+      "effort_reduction_pct": 23.803416878179913,
+      "solve_time": 113.53276109695435,
+      "success": true
+    },
+    {
+      "peak_torque": 10.29269103586059,
+      "onset_phase": 0.0471522027686252,
+      "duration": 0.5121235552871781,
+      "reward": 0.07642671009744378,
+      "effort_reduction_pct": 22.34546221637432,
+      "solve_time": 118.1531412601471,
+      "success": true
+    },
+    {
+      "peak_torque": 11.458052298610152,
+      "onset_phase": 0.05447084779886612,
+      "duration": 0.1739565102342204,
+      "reward": 0.015015859170051733,
+      "effort_reduction_pct": 4.621131290260473,
+      "solve_time": 108.45094442367554,
+      "success": true
+    },
+    {
+      "peak_torque": 11.998512291870776,
+      "onset_phase": 0.06494002229835902,
+      "duration": 0.32050026021765354,
+      "reward": 0.07097145481187028,
+      "effort_reduction_pct": 20.74165092874365,
+      "solve_time": 111.08872842788696,
+      "success": true
+    },
+    {
+      "peak_torque": 11.539948589843522,
+      "onset_phase": 0.4653671269358415,
+      "duration": 0.48237863031711403,
+      "reward": 0.009569666229643864,
+      "effort_reduction_pct": 3.1970050643883168,
+      "solve_time": 111.39072728157043,
+      "success": true
+    },
+    {
+      "peak_torque": 11.959599244313997,
+      "onset_phase": 0.03848217041436581,
+      "duration": 0.4987287534767346,
+      "reward": 0.08960794646403274,
+      "effort_reduction_pct": 26.11690532930234,
+      "solve_time": 114.42006230354309,
+      "success": true
+    },
+    {
+      "peak_torque": 9.699333610467932,
+      "onset_phase": 0.2262940730823555,
+      "duration": 0.5220455600495146,
+      "reward": 0.025767530167371818,
+      "effort_reduction_pct": 7.847975896528359,
+      "solve_time": 113.2344298362732,
+      "success": true
+    },
+    {
+      "peak_torque": 9.970314931643788,
+      "onset_phase": 0.006867011904658998,
+      "duration": 0.28455602545768255,
+      "reward": 0.033828638897859004,
+      "effort_reduction_pct": 10.059380237836889,
+      "solve_time": 115.94490838050842,
+      "success": true
+    },
+    {
+      "peak_torque": 9.908628807505597,
+      "onset_phase": 0.22572581842205391,
+      "duration": 0.4028499924657335,
+      "reward": 0.024769532686087847,
+      "effort_reduction_pct": 7.449667748075736,
+      "solve_time": 110.05013751983643,
+      "success": true
+    },
+    {
+      "peak_torque": 10.593708053778847,
+      "onset_phase": 0.017732716742054594,
+      "duration": 0.3432975184254794,
+      "reward": 0.051297979017868284,
+      "effort_reduction_pct": 15.068776827811098,
+      "solve_time": 109.73118329048157,
+      "success": true
+    },
+    {
+      "peak_torque": 11.71364216933894,
+      "onset_phase": 0.06342170951758266,
+      "duration": 0.5714737504061138,
+      "reward": 0.0802164137660478,
+      "effort_reduction_pct": 23.40483917821481,
+      "solve_time": 114.27937126159668,
+      "success": true
+    },
+    {
+      "peak_torque": 9.459272499933302,
+      "onset_phase": 0.04389120590561663,
+      "duration": 0.41965389283463184,
+      "reward": 0.06449940605157428,
+      "effort_reduction_pct": 18.93322384274512,
+      "solve_time": 109.97083806991577,
+      "success": true
+    },
+    {
+      "peak_torque": 11.640313380243006,
+      "onset_phase": 0.05596925057644647,
+      "duration": 0.4815003489278952,
+      "reward": 0.08495138287038298,
+      "effort_reduction_pct": 24.781779081660417,
+      "solve_time": 113.20346474647522,
+      "success": true
+    },
+    {
+      "peak_torque": 8.03357997684461,
+      "onset_phase": 0.0064978837882729,
+      "duration": 0.4522441229583347,
+      "reward": 0.04890027992974732,
+      "effort_reduction_pct": 14.470186502771917,
+      "solve_time": 110.13432192802429,
+      "success": true
+    },
+    {
+      "peak_torque": 10.487791386938792,
+      "onset_phase": 0.03825583266740492,
+      "duration": 0.521156943171121,
+      "reward": 0.07083303862260969,
+      "effort_reduction_pct": 20.72612724833724,
+      "solve_time": 109.89858031272888,
+      "success": true
+    },
+    {
+      "peak_torque": 8.186271633175924,
+      "onset_phase": 0.0518497556843045,
+      "duration": 0.3934691355525766,
+      "reward": 0.05839264852319547,
+      "effort_reduction_pct": 17.228212100697522,
+      "solve_time": 115.66359615325928,
+      "success": true
+    },
+    {
+      "peak_torque": 8.013240858647336,
+      "onset_phase": 0.10283057399945411,
+      "duration": 0.4610364222106468,
+      "reward": 0.05279018345076623,
+      "effort_reduction_pct": 15.598477369144367,
+      "solve_time": 111.96553206443787,
+      "success": true
+    },
+    {
+      "peak_torque": 10.850489785593837,
+      "onset_phase": 0.000837299649213734,
+      "duration": 0.5134748846434353,
+      "reward": 0.07329124342464152,
+      "effort_reduction_pct": 21.423927848010297,
+      "solve_time": 110.05038976669312,
+      "success": true
+    },
+    {
+      "peak_torque": 11.107267764248014,
+      "onset_phase": 0.14084590392485602,
+      "duration": 0.35639545477793777,
+      "reward": 0.0562856420804127,
+      "effort_reduction_pct": 16.532555271921133,
+      "solve_time": 108.65722990036011,
+      "success": true
+    },
+    {
+      "peak_torque": 11.124892223486516,
+      "onset_phase": 0.019407753455919028,
+      "duration": 0.5992023734379553,
+      "reward": 0.08497813943926322,
+      "effort_reduction_pct": 24.787087497995948,
+      "solve_time": 116.11265563964844,
+      "success": true
+    },
+    {
+      "peak_torque": 11.264741897711968,
+      "onset_phase": 0.009473418711096464,
+      "duration": 0.4274038038400842,
+      "reward": 0.07290748226486185,
+      "effort_reduction_pct": 21.293150595305153,
+      "solve_time": 110.3468713760376,
+      "success": true
+    },
+    {
+      "peak_torque": 11.986434291091458,
+      "onset_phase": 6.277141143005795e-05,
+      "duration": 0.4173345560420237,
+      "reward": 0.07789655074934886,
+      "effort_reduction_pct": 22.720770794768793,
+      "solve_time": 112.55596685409546,
+      "success": true
+    },
+    {
+      "peak_torque": 10.35253133809325,
+      "onset_phase": 0.03942609533094407,
+      "duration": 0.5902098832417868,
+      "reward": 0.07621250480472158,
+      "effort_reduction_pct": 22.27841308441384,
+      "solve_time": 111.77982425689697,
+      "success": true
+    },
+    {
+      "peak_torque": 9.41254074648516,
+      "onset_phase": 0.07393913392844889,
+      "duration": 0.5962119088463859,
+      "reward": 0.061750910541189086,
+      "effort_reduction_pct": 18.132833372278494,
+      "solve_time": 114.59045052528381,
+      "success": true
+    },
+    {
+      "peak_torque": 11.275502146841411,
+      "onset_phase": 0.03572036244163057,
+      "duration": 0.5782134377168213,
+      "reward": 0.08378683249204463,
+      "effort_reduction_pct": 24.444465826617602,
+      "solve_time": 112.38228058815002,
+      "success": true
+    },
+    {
+      "peak_torque": 10.921224252921984,
+      "onset_phase": 0.08993691917884697,
+      "duration": 0.5262749728160292,
+      "reward": 0.07058559369843194,
+      "effort_reduction_pct": 20.64226994030408,
+      "solve_time": 114.37210321426392,
+      "success": true
+    },
+    {
+      "peak_torque": 11.432872080583717,
+      "onset_phase": 0.022921422316858727,
+      "duration": 0.5547010296278694,
+      "reward": 0.08008227065890898,
+      "effort_reduction_pct": 23.36950005438311,
+      "solve_time": 109.77499055862427,
+      "success": true
+    },
+    {
+      "peak_torque": 11.529373659712,
+      "onset_phase": 0.21042184517639653,
+      "duration": 0.5960978305074355,
+      "reward": 0.030155854379160033,
+      "effort_reduction_pct": 9.123446560634802,
+      "solve_time": 111.99943709373474,
+      "success": true
+    },
+    {
+      "peak_torque": 8.601860776615105,
+      "onset_phase": 0.0034769204641793647,
+      "duration": 0.5877100154886237,
+      "reward": 0.06724871142176683,
+      "effort_reduction_pct": 19.73655873214406,
+      "solve_time": 117.53309988975525,
+      "success": true
+    },
+    {
+      "peak_torque": 10.716810589387656,
+      "onset_phase": 0.0993304412075288,
+      "duration": 0.427084757148949,
+      "reward": 0.0712521965457115,
+      "effort_reduction_pct": 20.853563670488796,
+      "solve_time": 116.43720841407776,
+      "success": true
+    },
+    {
+      "peak_torque": 11.405249194931915,
+      "onset_phase": 0.008530075591095292,
+      "duration": 0.5918736534052799,
+      "reward": 0.08086793469510423,
+      "effort_reduction_pct": 23.593636319132482,
+      "solve_time": 110.70230174064636,
+      "success": true
+    },
+    {
+      "peak_torque": 11.846157503143742,
+      "onset_phase": 0.010804820263378003,
+      "duration": 0.598514077752635,
+      "reward": 0.09090560445183828,
+      "effort_reduction_pct": 26.479748005313642,
+      "solve_time": 116.36137247085571,
+      "success": true
+    },
+    {
+      "peak_torque": 11.975420441552842,
+      "onset_phase": 0.06400634042064364,
+      "duration": 0.4177814676938132,
+      "reward": 0.0849784242050754,
+      "effort_reduction_pct": 24.789975445983973,
+      "solve_time": 114.13683223724365,
+      "success": true
+    },
+    {
+      "peak_torque": 10.207573135170183,
+      "onset_phase": 0.019899995810563353,
+      "duration": 0.5096156176290735,
+      "reward": 0.06973987485324845,
+      "effort_reduction_pct": 20.415574248697496,
+      "solve_time": 110.21413922309875,
+      "success": true
+    },
+    {
+      "peak_torque": 11.636373097201274,
+      "onset_phase": 0.00013007675136192577,
+      "duration": 0.5890092627579168,
+      "reward": 0.09195801921770666,
+      "effort_reduction_pct": 26.788947021247132,
+      "solve_time": 112.18675661087036,
+      "success": true
+    },
+    {
+      "peak_torque": 11.438938273682675,
+      "onset_phase": 0.017518409538063277,
+      "duration": 0.5980379322133371,
+      "reward": 0.08804973264329558,
+      "effort_reduction_pct": 25.666574751927186,
+      "solve_time": 120.6537914276123,
+      "success": true
+    },
+    {
+      "peak_torque": 11.86649373330631,
+      "onset_phase": 0.020325932572333286,
+      "duration": 0.5767630344483107,
+      "reward": 0.08284367115820392,
+      "effort_reduction_pct": 24.157628960946095,
+      "solve_time": 110.07347059249878,
+      "success": true
+    },
+    {
+      "peak_torque": 11.956032116270945,
+      "onset_phase": 0.13368682512318653,
+      "duration": 0.5990677303573054,
+      "reward": 0.04745068342663195,
+      "effort_reduction_pct": 14.00257168128334,
+      "solve_time": 102.8694121837616,
+      "success": true
+    },
+    {
+      "peak_torque": 11.788311679222996,
+      "onset_phase": 0.10990789040268668,
+      "duration": 0.599558262616697,
+      "reward": 0.0639687970935693,
+      "effort_reduction_pct": 18.744223686183943,
+      "solve_time": 117.4118275642395,
+      "success": true
+    },
+    {
+      "peak_torque": 11.820409885477561,
+      "onset_phase": 0.1525752409757734,
+      "duration": 0.5984772482055286,
+      "reward": 0.04041770732207606,
+      "effort_reduction_pct": 11.996425893576468,
+      "solve_time": 104.52464890480042,
+      "success": true
+    },
+    {
+      "peak_torque": 11.538865375000901,
+      "onset_phase": 0.002427631499401338,
+      "duration": 0.5934149565257614,
+      "reward": 0.09091334411587244,
+      "effort_reduction_pct": 26.489589485176012,
+      "solve_time": 113.10783052444458,
+      "success": true
+    },
+    {
+      "peak_torque": 11.504325232160502,
+      "onset_phase": 0.006510206150837592,
+      "duration": 0.5364004773615179,
+      "reward": 0.0821253584626625,
+      "effort_reduction_pct": 23.953803370959157,
+      "solve_time": 109.26668787002563,
+      "success": true
+    },
+    {
+      "peak_torque": 11.990762511236127,
+      "onset_phase": 0.0024555457442361236,
+      "duration": 0.5970417092210254,
+      "reward": 0.09366908902155263,
+      "effort_reduction_pct": 27.274162557513502,
+      "solve_time": 112.6921501159668,
+      "success": true
+    },
+    {
+      "peak_torque": 11.988783694392913,
+      "onset_phase": 0.0015249944732906927,
+      "duration": 0.5980273876405169,
+      "reward": 0.09359366516757152,
+      "effort_reduction_pct": 27.251515642491054,
+      "solve_time": 113.40658831596375,
+      "success": true
+    },
+    {
+      "peak_torque": 11.614132999608598,
+      "onset_phase": 0.06283904794065381,
+      "duration": 0.5958452824545297,
+      "reward": 0.07865843733307841,
+      "effort_reduction_pct": 22.961109835811477,
+      "solve_time": 118.1384551525116,
+      "success": true
+    },
+    {
+      "peak_torque": 10.316269515659211,
+      "onset_phase": 0.009005226746666012,
+      "duration": 0.5950017552126095,
+      "reward": 0.08106633017562387,
+      "effort_reduction_pct": 23.67620454957624,
+      "solve_time": 111.063725233078,
+      "success": true
+    },
+    {
+      "peak_torque": 11.583258330037262,
+      "onset_phase": 0.03590968331671984,
+      "duration": 0.5997982947709597,
+      "reward": 0.08465212311132482,
+      "effort_reduction_pct": 24.68726445886917,
+      "solve_time": 112.58367705345154,
+      "success": true
+    },
+    {
+      "peak_torque": 11.55396536710143,
+      "onset_phase": 0.08746262252474683,
+      "duration": 0.5228984402416361,
+      "reward": 0.07246317458825333,
+      "effort_reduction_pct": 21.169659331139673,
+      "solve_time": 112.6164779663086,
+      "success": true
+    },
+    {
+      "peak_torque": 11.839903407085474,
+      "onset_phase": 0.011356377676902686,
+      "duration": 0.5912815337028606,
+      "reward": 0.08667649219558779,
+      "effort_reduction_pct": 25.26083612733175,
+      "solve_time": 108.37371349334717,
+      "success": true
+    },
+    {
+      "peak_torque": 11.987422205175474,
+      "onset_phase": 0.000156015858959258,
+      "duration": 0.587290719247569,
+      "reward": 0.0910365602734441,
+      "effort_reduction_pct": 26.51376054958417,
+      "solve_time": 110.93894052505493,
+      "success": true
+    },
+    {
+      "peak_torque": 11.819163364320511,
+      "onset_phase": 0.017713086913586654,
+      "duration": 0.5819399961619298,
+      "reward": 0.08284720537051228,
+      "effort_reduction_pct": 24.1588008029102,
+      "solve_time": 111.23449182510376,
+      "success": true
+    },
+    {
+      "peak_torque": 10.322162959832307,
+      "onset_phase": 0.13245070493539338,
+      "duration": 0.5674325390028466,
+      "reward": 0.05188151027630694,
+      "effort_reduction_pct": 15.287998544353787,
+      "solve_time": 121.22329807281494,
+      "success": true
+    },
+    {
+      "peak_torque": 11.914048525297515,
+      "onset_phase": 0.0042193821916073114,
+      "duration": 0.5851740237163686,
+      "reward": 0.09345811581123188,
+      "effort_reduction_pct": 27.21664323266121,
+      "solve_time": 113.58850860595703,
+      "success": true
+    },
+    {
+      "peak_torque": 11.853755473948052,
+      "onset_phase": 0.0011163577937145363,
+      "duration": 0.5980356386957595,
+      "reward": 0.09358949387319689,
+      "effort_reduction_pct": 27.25519990746298,
+      "solve_time": 120.72788000106812,
+      "success": true
+    },
+    {
+      "peak_torque": 11.865255118942203,
+      "onset_phase": 0.00043789753988868055,
+      "duration": 0.5992684760095529,
+      "reward": 0.09340814398428728,
+      "effort_reduction_pct": 27.202737546458533,
+      "solve_time": 113.88886570930481,
+      "success": true
+    },
+    {
+      "peak_torque": 11.736262705518769,
+      "onset_phase": 0.021858034633677546,
+      "duration": 0.5894425707378144,
+      "reward": 0.08885879899117871,
+      "effort_reduction_pct": 25.894605741965943,
+      "solve_time": 119.7241883277893,
+      "success": true
+    },
+    {
+      "peak_torque": 11.864350274174042,
+      "onset_phase": 0.005550534659456192,
+      "duration": 0.5942268981745579,
+      "reward": 0.09269902240045329,
+      "effort_reduction_pct": 26.9995299654971,
+      "solve_time": 147.70844149589539,
+      "success": true
+    },
+    {
+      "peak_torque": 11.923798271726833,
+      "onset_phase": 0.0014573230124480985,
+      "duration": 0.5977115419235823,
+      "reward": 0.09363827091181792,
+      "effort_reduction_pct": 27.268324518754117,
+      "solve_time": 112.74111938476562,
+      "success": true
+    },
+    {
+      "peak_torque": 11.987488118674205,
+      "onset_phase": 0.0026791766627696006,
+      "duration": 0.591901541600511,
+      "reward": 0.0941252320774772,
+      "effort_reduction_pct": 27.407656176577866,
+      "solve_time": 116.16311931610107,
+      "success": true
+    },
+    {
+      "peak_torque": 11.207387702175113,
+      "onset_phase": 0.0009511774668352354,
+      "duration": 0.593340129519847,
+      "reward": 0.08874069658908924,
+      "effort_reduction_pct": 25.86912607354997,
+      "solve_time": 111.31970810890198,
+      "success": true
+    },
+    {
+      "peak_torque": 11.925912361685517,
+      "onset_phase": 0.0025900757248430847,
+      "duration": 0.585073812897598,
+      "reward": 0.08222855064306141,
+      "effort_reduction_pct": 23.98201437857111,
+      "solve_time": 109.8992919921875,
+      "success": true
+    },
+    {
+      "peak_torque": 9.810228865773636,
+      "onset_phase": 0.04066165441944303,
+      "duration": 0.5856239063476125,
+      "reward": 0.07243397691987971,
+      "effort_reduction_pct": 21.199063413399987,
+      "solve_time": 113.36863708496094,
+      "success": true
+    },
+    {
+      "peak_torque": 11.24540250386682,
+      "onset_phase": 0.0005754368713419017,
+      "duration": 0.5915625056313095,
+      "reward": 0.08883922762439575,
+      "effort_reduction_pct": 25.89535928171034,
+      "solve_time": 114.10395240783691,
+      "success": true
+    },
+    {
+      "peak_torque": 11.803917427930767,
+      "onset_phase": 0.006496527096479762,
+      "duration": 0.5995134116806726,
+      "reward": 0.08771607910737493,
+      "effort_reduction_pct": 25.561505141762176,
+      "solve_time": 107.66276597976685,
+      "success": true
+    },
+    {
+      "peak_torque": 11.690324128998792,
+      "onset_phase": 0.007046859959946744,
+      "duration": 0.5998399300580366,
+      "reward": 0.09112279620172736,
+      "effort_reduction_pct": 26.54705347142038,
+      "solve_time": 112.2402696609497,
+      "success": true
+    },
+    {
+      "peak_torque": 11.88239044774234,
+      "onset_phase": 0.01830370433175365,
+      "duration": 0.5525011580374667,
+      "reward": 0.07867148115985037,
+      "effort_reduction_pct": 22.960426187171624,
+      "solve_time": 110.964670419693,
+      "success": true
+    },
+    {
+      "peak_torque": 11.16254259340274,
+      "onset_phase": 0.005228492364317157,
+      "duration": 0.589984016775015,
+      "reward": 0.08781612130566034,
+      "effort_reduction_pct": 25.604155855997963,
+      "solve_time": 111.71242356300354,
+      "success": true
+    },
+    {
+      "peak_torque": 11.509232696155495,
+      "onset_phase": 0.002915734666743649,
+      "duration": 0.5996135933584995,
+      "reward": 0.09054742740650798,
+      "effort_reduction_pct": 26.384520742068833,
+      "solve_time": 114.25955486297607,
+      "success": true
+    },
+    {
+      "peak_torque": 11.83677160386626,
+      "onset_phase": 0.000708530140566041,
+      "duration": 0.5941133733629121,
+      "reward": 0.09330758083761821,
+      "effort_reduction_pct": 27.174146752099105,
+      "solve_time": 111.6925847530365,
+      "success": true
+    },
+    {
+      "peak_torque": 11.682843180980694,
+      "onset_phase": 7.560886260692599e-05,
+      "duration": 0.5998146943266532,
+      "reward": 0.09207237163773278,
+      "effort_reduction_pct": 26.820541786516895,
+      "solve_time": 110.7348473072052,
+      "success": true
+    },
+    {
+      "peak_torque": 11.988563854355348,
+      "onset_phase": 0.008439761110465443,
+      "duration": 0.5944364298598103,
+      "reward": 0.0881156273463277,
+      "effort_reduction_pct": 25.672745215974125,
+      "solve_time": 110.15265583992004,
+      "success": true
+    },
+    {
+      "peak_torque": 11.338157497654413,
+      "onset_phase": 0.001196555825322086,
+      "duration": 0.5956182807524001,
+      "reward": 0.08960831717422478,
+      "effort_reduction_pct": 26.116662524147998,
+      "solve_time": 112.21524953842163,
+      "success": true
+    },
+    {
+      "peak_torque": 11.658125345936151,
+      "onset_phase": 0.004529727030014272,
+      "duration": 0.5913325650907462,
+      "reward": 0.0914265890661001,
+      "effort_reduction_pct": 26.635834725669365,
+      "solve_time": 109.94933795928955,
+      "success": true
+    },
+    {
+      "peak_torque": 11.61955660056096,
+      "onset_phase": 0.0012812382467115152,
+      "duration": 0.5981961644241811,
+      "reward": 0.09073904669453212,
+      "effort_reduction_pct": 26.439803610139773,
+      "solve_time": 108.89419746398926,
+      "success": true
+    },
+    {
+      "peak_torque": 11.001490160897768,
+      "onset_phase": 0.00344298178660163,
+      "duration": 0.5824505337585807,
+      "reward": 0.0870548207486297,
+      "effort_reduction_pct": 25.388182456830567,
+      "solve_time": 112.02604174613953,
+      "success": true
+    },
+    {
+      "peak_torque": 11.134508891499323,
+      "onset_phase": 0.00231503650802531,
+      "duration": 0.598714862096958,
+      "reward": 0.08820711466507103,
+      "effort_reduction_pct": 25.716284446344908,
+      "solve_time": 116.0561318397522,
+      "success": true
+    },
+    {
+      "peak_torque": 11.954552016065765,
+      "onset_phase": 0.001590072622320068,
+      "duration": 0.5977431823687404,
+      "reward": 0.0938970912823353,
+      "effort_reduction_pct": 27.3424557056637,
+      "solve_time": 112.7321207523346,
+      "success": true
+    },
+    {
+      "peak_torque": 11.952794359814554,
+      "onset_phase": 0.0032945989353110714,
+      "duration": 0.596842293678922,
+      "reward": 0.09374877722649108,
+      "effort_reduction_pct": 27.29826602622214,
+      "solve_time": 116.63438057899475,
+      "success": true
+    },
+    {
+      "peak_torque": 11.902068623529674,
+      "onset_phase": 0.0011401676058618237,
+      "duration": 0.5998702291914858,
+      "reward": 0.08914757934553356,
+      "effort_reduction_pct": 25.96922263904097,
+      "solve_time": 108.91441988945007,
+      "success": true
+    },
+    {
+      "peak_torque": 10.855630561174092,
+      "onset_phase": 0.034560321727490566,
+      "duration": 0.5892285531245264,
+      "reward": 0.08078210365277468,
+      "effort_reduction_pct": 23.58585547664131,
+      "solve_time": 112.75979423522949,
+      "success": true
+    },
+    {
+      "peak_torque": 10.850155046510372,
+      "onset_phase": 0.004287373016361225,
+      "duration": 0.5859938137850662,
+      "reward": 0.08580335951584218,
+      "effort_reduction_pct": 25.030238295645326,
+      "solve_time": 112.23408603668213,
+      "success": true
+    },
+    {
+      "peak_torque": 11.533690637575063,
+      "onset_phase": 0.01819818374931499,
+      "duration": 0.5945825038885635,
+      "reward": 0.08808456674716808,
+      "effort_reduction_pct": 25.675307557406907,
+      "solve_time": 115.5351140499115,
+      "success": true
+    },
+    {
+      "peak_torque": 11.311777243614154,
+      "onset_phase": 6.449313185490726e-05,
+      "duration": 0.5989245213073525,
+      "reward": 0.08953553101045866,
+      "effort_reduction_pct": 26.095991622854044,
+      "solve_time": 111.94103384017944,
+      "success": true
+    },
+    {
+      "peak_torque": 11.773807666379362,
+      "onset_phase": 0.0016640341912441434,
+      "duration": 0.5991969094650533,
+      "reward": 0.08782094420997955,
+      "effort_reduction_pct": 25.589118749601653,
+      "solve_time": 107.63789868354797,
+      "success": true
+    },
+    {
+      "peak_torque": 11.886928644486074,
+      "onset_phase": 0.00011631163019504042,
+      "duration": 0.5984880690910357,
+      "reward": 0.08910908612443205,
+      "effort_reduction_pct": 25.958518223962525,
+      "solve_time": 107.92631888389587,
+      "success": true
+    },
+    {
+      "peak_torque": 11.876893074168501,
+      "onset_phase": 0.00018418237799729248,
+      "duration": 0.5985249651672451,
+      "reward": 0.08902704744131404,
+      "effort_reduction_pct": 25.935037069133276,
+      "solve_time": 106.88914752006531,
+      "success": true
+    },
+    {
+      "peak_torque": 10.941008882068697,
+      "onset_phase": 0.00029427192549865024,
+      "duration": 0.5990294571640362,
+      "reward": 0.08681140687747133,
+      "effort_reduction_pct": 25.31775514219855,
+      "solve_time": 111.85280847549438,
+      "success": true
+    },
+    {
+      "peak_torque": 11.939815091390305,
+      "onset_phase": 0.011378059738474198,
+      "duration": 0.5973113734919233,
+      "reward": 0.0915088315185915,
+      "effort_reduction_pct": 26.65233151469509,
+      "solve_time": 117.01950240135193,
+      "success": true
+    },
+    {
+      "peak_torque": 11.827176043033905,
+      "onset_phase": 0.010930410628970622,
+      "duration": 0.5999988453354114,
+      "reward": 0.0909628168485164,
+      "effort_reduction_pct": 26.4925785665098,
+      "solve_time": 115.88397717475891,
+      "success": true
+    },
+    {
+      "peak_torque": 11.54699395206873,
+      "onset_phase": 0.00667094801730479,
+      "duration": 0.5982728669250146,
+      "reward": 0.08618513755484371,
+      "effort_reduction_pct": 25.124796882794314,
+      "solve_time": 108.19787740707397,
+      "success": true
+    },
+    {
+      "peak_torque": 11.630230893726775,
+      "onset_phase": 0.014064644493685446,
+      "duration": 0.5967091939315514,
+      "reward": 0.08761512050183418,
+      "effort_reduction_pct": 25.534486193595857,
+      "solve_time": 114.23172855377197,
+      "success": true
+    },
+    {
+      "peak_torque": 11.823688631937934,
+      "onset_phase": 0.0019881422204168354,
+      "duration": 0.5935123565969014,
+      "reward": 0.09306251504130358,
+      "effort_reduction_pct": 27.104184924269674,
+      "solve_time": 111.53384256362915,
+      "success": true
+    },
+    {
+      "peak_torque": 11.530099718458207,
+      "onset_phase": 0.004494255214036956,
+      "duration": 0.5990619424197531,
+      "reward": 0.09044566884441001,
+      "effort_reduction_pct": 26.356451762248014,
+      "solve_time": 113.639883518219,
+      "success": true
+    },
+    {
+      "peak_torque": 11.854360786010034,
+      "onset_phase": 0.0083015627241974,
+      "duration": 0.5985794553388163,
+      "reward": 0.08719071281822809,
+      "effort_reduction_pct": 25.408358894977244,
+      "solve_time": 108.916344165802,
+      "success": true
+    },
+    {
+      "peak_torque": 11.80776095120955,
+      "onset_phase": 0.014012224823173448,
+      "duration": 0.5918283219700716,
+      "reward": 0.08885462144625837,
+      "effort_reduction_pct": 25.88897631183279,
+      "solve_time": 113.71618175506592,
+      "success": true
+    },
+    {
+      "peak_torque": 11.65117198197929,
+      "onset_phase": 0.0041168693577060995,
+      "duration": 0.5896337792174796,
+      "reward": 0.0915868812423019,
+      "effort_reduction_pct": 26.681750464872238,
+      "solve_time": 113.41687846183777,
+      "success": true
+    },
+    {
+      "peak_torque": 11.812241536310212,
+      "onset_phase": 0.002337720684565122,
+      "duration": 0.5811760259424809,
+      "reward": 0.08165721407639727,
+      "effort_reduction_pct": 23.819132563272674,
+      "solve_time": 108.96713089942932,
+      "success": true
+    },
+    {
+      "peak_torque": 11.880577071890185,
+      "onset_phase": 0.001392615076057243,
+      "duration": 0.5978601057566567,
+      "reward": 0.09351443428073329,
+      "effort_reduction_pct": 27.233214496725754,
+      "solve_time": 116.56793069839478,
+      "success": true
+    },
+    {
+      "peak_torque": 11.812386562593707,
+      "onset_phase": 0.0058770622301599846,
+      "duration": 0.5962816018641781,
+      "reward": 0.09241933075651136,
+      "effort_reduction_pct": 26.919776359651586,
+      "solve_time": 111.78053903579712,
+      "success": true
+    },
+    {
+      "peak_torque": 11.539978611907948,
+      "onset_phase": 0.01125273140235997,
+      "duration": 0.5762603424866338,
+      "reward": 0.0899075449833484,
+      "effort_reduction_pct": 26.199630423959714,
+      "solve_time": 117.15334749221802,
+      "success": true
+    },
+    {
+      "peak_torque": 11.5956058573958,
+      "onset_phase": 0.0044451843313871265,
+      "duration": 0.5956085806602497,
+      "reward": 0.09091879780181747,
+      "effort_reduction_pct": 26.49038860451391,
+      "solve_time": 110.44786763191223,
+      "success": true
+    },
+    {
+      "peak_torque": 11.865457647041216,
+      "onset_phase": 0.00196946041331398,
+      "duration": 0.5915480477867329,
+      "reward": 0.09339345289951545,
+      "effort_reduction_pct": 27.19909179398915,
+      "solve_time": 113.10201406478882,
+      "success": true
+    },
+    {
+      "peak_torque": 11.79289543884639,
+      "onset_phase": 0.006126216406468094,
+      "duration": 0.5977963938527953,
+      "reward": 0.09203488502157194,
+      "effort_reduction_pct": 26.808372560334647,
+      "solve_time": 112.12011194229126,
+      "success": true
+    },
+    {
+      "peak_torque": 11.87692055858974,
+      "onset_phase": 5.96942349625518e-05,
+      "duration": 0.5972126573668669,
+      "reward": 0.09363865579762673,
+      "effort_reduction_pct": 27.268739388012577,
+      "solve_time": 111.85480856895447,
+      "success": true
+    },
+    {
+      "peak_torque": 11.753613661224904,
+      "onset_phase": 0.0019411184782485791,
+      "duration": 0.5970363088433568,
+      "reward": 0.09237441025661954,
+      "effort_reduction_pct": 26.90686393539112,
+      "solve_time": 110.32849287986755,
+      "success": true
+    },
+    {
+      "peak_torque": 11.752654627823452,
+      "onset_phase": 0.004237944693394667,
+      "duration": 0.5978393053390849,
+      "reward": 0.09213524506209407,
+      "effort_reduction_pct": 26.83733345606753,
+      "solve_time": 113.31229186058044,
+      "success": true
+    },
+    {
+      "peak_torque": 11.911941714786344,
+      "onset_phase": 0.00014492479507616687,
+      "duration": 0.5973050202116751,
+      "reward": 0.0893007711738768,
+      "effort_reduction_pct": 26.013408502213466,
+      "solve_time": 108.36870217323303,
+      "success": true
+    },
+    {
+      "peak_torque": 11.963164967372055,
+      "onset_phase": 8.140508172385716e-05,
+      "duration": 0.5994907480820989,
+      "reward": 0.09408145057778017,
+      "effort_reduction_pct": 27.395250717226403,
+      "solve_time": 109.8690333366394,
+      "success": true
+    },
+    {
+      "peak_torque": 11.82302396280333,
+      "onset_phase": 1.438541985659895e-05,
+      "duration": 0.5955400379310902,
+      "reward": 0.09329690442524247,
+      "effort_reduction_pct": 27.1698761580715,
+      "solve_time": 115.63346481323242,
+      "success": true
+    },
+    {
+      "peak_torque": 11.905732514092152,
+      "onset_phase": 0.004239102182546463,
+      "duration": 0.5946049000119793,
+      "reward": 0.08813788460913424,
+      "effort_reduction_pct": 25.678432657959572,
+      "solve_time": 108.8689956665039,
+      "success": true
+    },
+    {
+      "peak_torque": 11.899240694464089,
+      "onset_phase": 0.00010988599229797786,
+      "duration": 0.5958963854117487,
+      "reward": 0.09381135147363101,
+      "effort_reduction_pct": 27.318301336470363,
+      "solve_time": 112.21334409713745,
+      "success": true
+    },
+    {
+      "peak_torque": 11.878703361101554,
+      "onset_phase": 0.0012712541183681153,
+      "duration": 0.5988178996226062,
+      "reward": 0.08867381490409623,
+      "effort_reduction_pct": 25.833020284522597,
+      "solve_time": 107.46535992622375,
+      "success": true
+    }
+  ]
+}

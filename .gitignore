@@ -1,9 +1,7 @@
 .DS_Store
-*.sto
-*.log
 __pycache__/
 *.pyc
-Geometry/*.sto
-*.trc
-*.mot
+*.log
 data/
+_temp_*
+.ipynb_checkpoints/

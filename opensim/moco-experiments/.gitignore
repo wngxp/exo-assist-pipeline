@@ -4,5 +4,5 @@ data/
 !coordinates.sto
 !grf_walk.xml
 optimization_log.csv
-optimization_results.json
 __pycache__/
+.ipynb_checkpoints/
