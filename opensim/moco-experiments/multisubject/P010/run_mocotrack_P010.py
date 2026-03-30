@@ -41,10 +41,10 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # Walking at slow speed: ~1.0-1.2s per cycle, so 2s ≈ 2 cycles
 # Start a bit into the trial to skip transients
 T_START = 1.0
-T_END = 3.0
+T_END = 2.0
 
 # Solver settings
-MESH_INTERVAL = 0.04      # coarse first, refine to 0.02 later
+MESH_INTERVAL = 0.05      # coarse first, refine to 0.02 later
 TRACKING_WEIGHT = 10.0
 EFFORT_WEIGHT = 1.0
 
@@ -207,7 +207,7 @@ def run_mocotrack(model_path):
     # --- Reference kinematics ---
     tableProcessor = osim.TableProcessor(os.path.abspath(COORDS_FILE))
     tableProcessor.append(osim.TabOpLowPassFilter(6))
-    tableProcessor.append(osim.TabOpUseAbsoluteStateNames())
+    # tableProcessor.append(osim.TabOpUseAbsoluteStateNames())
     track.setStatesReference(tableProcessor)
 
     track.set_states_global_tracking_weight(TRACKING_WEIGHT)
@@ -233,8 +233,8 @@ def run_mocotrack(model_path):
 
     # Configure solver
     solver = osim.MocoCasADiSolver.safeDownCast(study.updSolver())
-    solver.set_optim_convergence_tolerance(1e-3)
-    solver.set_optim_constraint_tolerance(1e-3)
+    solver.set_optim_convergence_tolerance(1e-2)
+    solver.set_optim_constraint_tolerance(1e-2)
     solver.set_optim_max_iterations(1000)
 
     # --- Solve ---
