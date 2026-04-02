@@ -1,0 +1,9 @@
+{
+  "n_episodes": 10000,
+  "total_time_sec": 699.6121718883514,
+  "final_avg_reward": 158.0743992496223,
+  "final_avg_torque": 10.069457054138184,
+  "final_avg_effort": 0.014865295624013316,
+  "final_avg_length": 27.0,
+  "best_reward": 160.19801661497203
+}
