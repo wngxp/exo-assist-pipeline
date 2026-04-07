@@ -81,6 +81,7 @@ def stage1_train_walker(total_timesteps=500_000):
         vf_coef=0.5,
         max_grad_norm=0.5,
         verbose=1,
+        device="cpu",
         policy_kwargs=dict(
             net_arch=dict(pi=[256, 256], vf=[256, 256]),
             activation_fn=nn.Tanh,
@@ -151,8 +152,8 @@ class ExoWithWalkerSB3(gym.Env):
         if isinstance(obs, tuple):
             obs = obs[0]
 
-        self.walker = PPO.load(walker_path)
-        self.sim = self.env.sim
+        self.walker = PPO.load(walker_path, device="cpu")
+        self.sim = self.env.unwrapped.sim
         self.model_mj = self.sim.model
 
         self.max_steps = max_steps
@@ -239,7 +240,7 @@ class ExoWithWalkerSB3(gym.Env):
                 obs = result[0]
                 done = result[2]
 
-                act = self.env.sim.data.act
+                act = self.env.unwrapped.sim.data.act
                 if act is not None and len(act) > 0:
                     ep_efforts.append(float(np.mean(act ** 2)))
                 if done:
@@ -350,7 +351,7 @@ class ExoWithWalkerSB3(gym.Env):
             obs = obs[0]
 
         self.walker_obs = obs
-        self.sim = self.env.sim
+        self.sim = self.env.unwrapped.sim
         self.prev_torque[:] = 0.0
         self.step_count = 0
 
@@ -477,6 +478,7 @@ def stage2_train_exo(walker_path, total_timesteps=1_000_000):
         max_grad_norm=0.5,
         verbose=1,
         tensorboard_log=os.path.join(OUT_DIR, "tb_exo"),
+        device="cpu",
         policy_kwargs=dict(
             net_arch=dict(pi=[128, 128], vf=[128, 128]),
             activation_fn=nn.Tanh,
@@ -554,6 +556,61 @@ def sanity_check_exo_env(walker_path, n_steps=200):
         print(f"  termination reasons: {termination_reasons}")
 
 
+def baseline_check_walker(walker_path, n_episodes=5, max_steps=200):
+    """
+    Run the trained walker alone on the raw MyoSuite env and report
+    when the base environment signals done. This helps distinguish
+    base-task horizon issues from exo-wrapper issues.
+    """
+    from myosuite.utils import gym as myogym
+    from stable_baselines3 import PPO
+
+    print("\n" + "=" * 60)
+    print("Baseline walker-only diagnostic")
+    print(f"  Episodes: {n_episodes}")
+    print(f"  Max steps: {max_steps}")
+    print("=" * 60)
+
+    env = myogym.make("myoLegWalk-v0")
+    walker = PPO.load(walker_path, device="cpu")
+
+    lengths = []
+    end_rewards = []
+
+    for ep in range(n_episodes):
+        obs = env.reset()
+        if isinstance(obs, tuple):
+            obs = obs[0]
+
+        done = False
+        final_reward = None
+        step_idx = 0
+
+        for step_idx in range(1, max_steps + 1):
+            action, _ = walker.predict(obs, deterministic=True)
+            result = env.step(action)
+            obs = result[0]
+            final_reward = float(result[1])
+            done = bool(result[2])
+
+            if done:
+                print(
+                    f"[WALKER ONLY END] ep={ep} step={step_idx} "
+                    f"reward={final_reward:.3f}"
+                )
+                break
+
+        lengths.append(step_idx)
+        end_rewards.append(final_reward if final_reward is not None else float("nan"))
+
+    env.close()
+
+    print("\nWalker-only summary")
+    print(f"  mean episode length: {np.mean(lengths):.2f}")
+    print(f"  std episode length : {np.std(lengths):.2f}")
+    print(f"  lengths            : {lengths}")
+    print(f"  end rewards        : {[round(x, 3) if np.isfinite(x) else x for x in end_rewards]}")
+
 # =====================================================================
 # MAIN
 # =====================================================================
@@ -584,3 +641,8 @@ if __name__ == '__main__':
         stage2_train_exo(walker_path, total_timesteps=1_000_000)
 
     print("\nAll done!")
+    if stage == 'baseline':
+        if not os.path.exists(walker_path + '.zip'):
+            print(f"ERROR: Walker not found at {walker_path}.zip")
+            sys.exit(1)
+        baseline_check_walker(walker_path, n_episodes=5, max_steps=200)
