@@ -158,6 +158,11 @@ class ExoWithWalkerSB3(gym.Env):
         self.max_steps = max_steps
         self.step_count = 0
 
+        self.last_done = False
+        self.last_custom_terminated = False
+        self.last_termination_reason = None
+        self.last_termination_snapshot = {}
+
         self.prev_torque = np.zeros(2, dtype=np.float32)
         self.walker_obs = obs
 
@@ -326,11 +331,17 @@ class ExoWithWalkerSB3(gym.Env):
         if self.pelvis_height_qpos is not None:
             pelvis_h = float(qpos[self.pelvis_height_qpos])
 
+        reason = None
         if abs(torso_pitch) > 1.2:
-            return True
-        if pelvis_h < 0.65:
-            return True
-        return False
+            reason = "torso_pitch"
+        elif pelvis_h < 0.65:
+            reason = "pelvis_height"
+
+        snapshot = {
+            "torso_pitch": torso_pitch,
+            "pelvis_height": pelvis_h,
+        }
+        return reason is not None, reason, snapshot
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -342,6 +353,11 @@ class ExoWithWalkerSB3(gym.Env):
         self.sim = self.env.sim
         self.prev_torque[:] = 0.0
         self.step_count = 0
+
+        self.last_done = False
+        self.last_custom_terminated = False
+        self.last_termination_reason = None
+        self.last_termination_snapshot = {}
 
         return self._get_obs(), {}
 
@@ -375,8 +391,26 @@ class ExoWithWalkerSB3(gym.Env):
             current_effort = self.baseline_effort
 
         reward = self._compute_reward(action, base_reward, current_effort)
-        terminated = done or self._terminated()
+
+        custom_terminated, custom_reason, custom_snapshot = self._terminated()
+        terminated = done or custom_terminated
         truncated = self.step_count >= self.max_steps
+
+        self.last_done = done
+        self.last_custom_terminated = custom_terminated
+        self.last_termination_reason = custom_reason
+        self.last_termination_snapshot = custom_snapshot
+
+        if truncated and not terminated:
+            termination_source = "time_limit"
+        elif done and custom_terminated:
+            termination_source = "env+custom"
+        elif done:
+            termination_source = "env_done"
+        elif custom_terminated:
+            termination_source = "custom"
+        else:
+            termination_source = None
 
         info = {
             "current_effort": current_effort,
@@ -385,7 +419,27 @@ class ExoWithWalkerSB3(gym.Env):
                 (self.baseline_effort - current_effort) / max(self.baseline_effort, 1e-6)
             ),
             "mean_abs_torque": float(np.mean(np.abs(action))),
+            "env_done": bool(done),
+            "custom_terminated": bool(custom_terminated),
+            "termination_source": termination_source,
+            "termination_reason": custom_reason,
+            "torso_pitch": float(custom_snapshot["torso_pitch"]),
+            "pelvis_height": float(custom_snapshot["pelvis_height"]),
+            "step_count": int(self.step_count),
         }
+
+        if terminated or truncated:
+            print(
+                "[EP END] "
+                f"source={termination_source} "
+                f"reason={custom_reason} "
+                f"step={self.step_count} "
+                f"base_reward={base_reward:.3f} "
+                f"effort={current_effort:.6f} "
+                f"|tau|={float(np.mean(np.abs(action))):.3f} "
+                f"torso={float(custom_snapshot['torso_pitch']):.3f} "
+                f"pelvis_h={float(custom_snapshot['pelvis_height']):.3f}"
+            )
 
         self.prev_torque = action.copy()
         return self._get_obs(), reward, terminated, truncated, info
@@ -468,6 +522,8 @@ def sanity_check_exo_env(walker_path, n_steps=200):
     rewards = []
     efforts = []
     torques = []
+    termination_sources = []
+    termination_reasons = []
 
     for _ in range(n_steps):
         action = env.action_space.sample()
@@ -476,6 +532,9 @@ def sanity_check_exo_env(walker_path, n_steps=200):
         rewards.append(reward)
         efforts.append(info["current_effort"])
         torques.append(info["mean_abs_torque"])
+        if terminated or truncated:
+            termination_sources.append(info.get("termination_source"))
+            termination_reasons.append(info.get("termination_reason"))
 
         if not np.all(np.isfinite(obs)):
             raise RuntimeError("Non-finite observation encountered")
@@ -490,6 +549,9 @@ def sanity_check_exo_env(walker_path, n_steps=200):
     print(f"  mean reward: {np.mean(rewards):.3f}")
     print(f"  mean effort: {np.mean(efforts):.6f}")
     print(f"  mean |tau| : {np.mean(torques):.3f} Nm")
+    if termination_sources:
+        print(f"  termination sources: {termination_sources}")
+        print(f"  termination reasons: {termination_reasons}")
 
 
 # =====================================================================
