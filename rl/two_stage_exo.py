@@ -122,48 +122,59 @@ def stage1_train_walker(total_timesteps=500_000):
 
 
 # =====================================================================
-# STAGE 2: Train exo policy with frozen walker
+# STAGE 2: Train exo policy with SB3 on top of trained walker
 # =====================================================================
+import gymnasium as gym
+from gymnasium import spaces
 
-# --- Exo environment that uses the trained walker ---
-class ExoWithWalker:
+class ExoWithWalkerSB3(gym.Env):
     """
-    Environment where:
-    - A trained PPO walker controls the 80 muscles (frozen)
-    - The exo policy controls 2 hip torques
-    - Muscles naturally respond to exo because the walker policy
-      observes the changed state and adjusts its activations
+    Stage-1 bootstrap environment:
+    - frozen walker supplies nominal locomotion
+    - exo policy adds 2 hip torques
+    - reward favors walking quality + lower effort proxy + smooth torque
+
+    This is NOT the final co-adaptive architecture.
+    It is a practical first assistance-training setup.
     """
+    metadata = {"render_modes": []}
+    MAX_TORQUE = 12.0
 
-    MAX_TORQUE = 12.0  # WAWA limit
+    def __init__(self, walker_path, max_steps=300):
+        super().__init__()
 
-    def __init__(self, walker_path):
-        from myosuite.utils import gym
+        from myosuite.utils import gym as myogym
         from stable_baselines3 import PPO
 
-        self.env = gym.make('myoLegWalk-v0')
+        self.env = myogym.make("myoLegWalk-v0")
         obs = self.env.reset()
         if isinstance(obs, tuple):
             obs = obs[0]
 
-        # Load frozen walker
         self.walker = PPO.load(walker_path)
-        print(f"  Loaded walker from {walker_path}")
-
         self.sim = self.env.sim
         self.model_mj = self.sim.model
 
-        # Map hip joint indices
-        self._map_joints()
-
-        self.prev_torque = np.zeros(2)
+        self.max_steps = max_steps
         self.step_count = 0
 
-        # Measure baseline effort (walker without exo)
+        self.prev_torque = np.zeros(2, dtype=np.float32)
+        self.walker_obs = obs
+
+        self._map_joints()
+        self._map_root()
         self.baseline_effort = self._measure_baseline()
 
+        # obs = [sin_phi, cos_phi, hip_r, hip_l, hipd_r, hipd_l,
+        #        pelvis_vx, torso_pitch, prev_tau_r, prev_tau_l]
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(10,), dtype=np.float32
+        )
+        self.action_space = spaces.Box(
+            low=-self.MAX_TORQUE, high=self.MAX_TORQUE, shape=(2,), dtype=np.float32
+        )
+
     def _map_joints(self):
-        """Find hip and knee joint indices."""
         self.hip_r_qpos = None
         self.hip_l_qpos = None
         self.hip_r_qvel = None
@@ -173,24 +184,41 @@ class ExoWithWalker:
 
         for i in range(self.model_mj.njnt):
             name = self.model_mj.joint(i).name.lower()
-            if 'hip_flexion' in name and '_r' in name:
+            if "hip_flexion" in name and "_r" in name:
                 self.hip_r_qpos = self.model_mj.jnt_qposadr[i]
                 self.hip_r_qvel = self.model_mj.jnt_dofadr[i]
-            elif 'hip_flexion' in name and '_l' in name:
+            elif "hip_flexion" in name and "_l" in name:
                 self.hip_l_qpos = self.model_mj.jnt_qposadr[i]
                 self.hip_l_qvel = self.model_mj.jnt_dofadr[i]
-            elif 'knee' in name and '_r' in name:
+            elif "knee" in name and "_r" in name:
                 self.knee_r_qpos = self.model_mj.jnt_qposadr[i]
-            elif 'knee' in name and '_l' in name:
+            elif "knee" in name and "_l" in name:
                 self.knee_l_qpos = self.model_mj.jnt_qposadr[i]
 
-        found = sum(x is not None for x in [
-            self.hip_r_qpos, self.hip_l_qpos,
-            self.hip_r_qvel, self.hip_l_qvel])
+        found = sum(
+            x is not None for x in
+            [self.hip_r_qpos, self.hip_l_qpos, self.hip_r_qvel, self.hip_l_qvel]
+        )
         print(f"  Joint mapping: {found}/4 hip indices found")
 
-    def _measure_baseline(self, n_episodes=5):
-        """Measure average muscle effort without exo assistance."""
+    def _map_root(self):
+        self.root_x_qvel = 0
+        self.torso_pitch_qpos = None
+        self.pelvis_height_qpos = None
+
+        # try to find useful torso/root joints
+        for i in range(self.model_mj.njnt):
+            name = self.model_mj.joint(i).name.lower()
+            if self.torso_pitch_qpos is None and ("pelvis_tilt" in name or "torso" in name):
+                self.torso_pitch_qpos = self.model_mj.jnt_qposadr[i]
+            if self.pelvis_height_qpos is None and (
+                "pelvis_ty" in name or "root_ty" in name or "pelvis_y" in name
+            ):
+                self.pelvis_height_qpos = self.model_mj.jnt_qposadr[i]
+            if "root_tx" in name or "pelvis_tx" in name:
+                self.root_x_qvel = self.model_mj.jnt_dofadr[i]
+
+    def _measure_baseline(self, n_episodes=3):
         print("  Measuring baseline effort (no exo)...")
         efforts = []
         for _ in range(n_episodes):
@@ -198,6 +226,7 @@ class ExoWithWalker:
             if isinstance(obs, tuple):
                 obs = obs[0]
             ep_efforts = []
+
             for _ in range(200):
                 action, _ = self.walker.predict(obs, deterministic=True)
                 result = self.env.step(action)
@@ -209,326 +238,247 @@ class ExoWithWalker:
                     ep_efforts.append(float(np.mean(act ** 2)))
                 if done:
                     break
+
             if ep_efforts:
                 efforts.append(np.mean(ep_efforts))
 
-        baseline = np.mean(efforts) if efforts else 0.01
+        baseline = float(np.mean(efforts)) if efforts else 0.01
         print(f"  Baseline muscle effort: {baseline:.6f}")
         return baseline
 
-    def reset(self):
+    def _estimate_phase(self):
+        """
+        Cheap phase proxy for Stage 1:
+        derive phase from right hip angle/velocity.
+        This is not a true gait phase estimator, but it's enough to bootstrap.
+        """
+        qpos = self.sim.data.qpos
+        qvel = self.sim.data.qvel
+
+        hip = qpos[self.hip_r_qpos] if self.hip_r_qpos is not None else 0.0
+        hipd = qvel[self.hip_r_qvel] if self.hip_r_qvel is not None else 0.0
+        phase = np.arctan2(hipd, hip)   # [-pi, pi]
+        return np.sin(phase), np.cos(phase)
+
+    def _get_obs(self):
+        obs = np.zeros(10, dtype=np.float32)
+        qpos = self.sim.data.qpos
+        qvel = self.sim.data.qvel
+
+        sin_phi, cos_phi = self._estimate_phase()
+        obs[0] = sin_phi
+        obs[1] = cos_phi
+
+        if self.hip_r_qpos is not None:
+            obs[2] = qpos[self.hip_r_qpos]
+        if self.hip_l_qpos is not None:
+            obs[3] = qpos[self.hip_l_qpos]
+        if self.hip_r_qvel is not None:
+            obs[4] = qvel[self.hip_r_qvel]
+        if self.hip_l_qvel is not None:
+            obs[5] = qvel[self.hip_l_qvel]
+
+        if self.root_x_qvel is not None and self.root_x_qvel < len(qvel):
+            obs[6] = qvel[self.root_x_qvel]
+
+        if self.torso_pitch_qpos is not None:
+            obs[7] = qpos[self.torso_pitch_qpos]
+
+        obs[8] = self.prev_torque[0] / self.MAX_TORQUE
+        obs[9] = self.prev_torque[1] / self.MAX_TORQUE
+        return obs
+
+    def _compute_reward(self, action, base_reward, current_effort):
+        # rough effort reduction proxy
+        effort_reduction = (self.baseline_effort - current_effort) / max(self.baseline_effort, 1e-6)
+        effort_bonus = 3.0 * effort_reduction
+
+        # keep existing walking quality from MyoSuite
+        walk_reward = float(base_reward)
+
+        # encourage smaller torques
+        energy_penalty = 0.003 * float(np.sum(action ** 2))
+
+        # encourage smooth torques
+        jerk_penalty = 0.01 * float(np.sum((action - self.prev_torque) ** 2))
+
+        return walk_reward + effort_bonus - energy_penalty - jerk_penalty
+
+    def _terminated(self):
+        qpos = self.sim.data.qpos
+
+        torso_pitch = 0.0
+        if self.torso_pitch_qpos is not None:
+            torso_pitch = float(qpos[self.torso_pitch_qpos])
+
+        pelvis_h = 1.0
+        if self.pelvis_height_qpos is not None:
+            pelvis_h = float(qpos[self.pelvis_height_qpos])
+
+        if abs(torso_pitch) > 1.2:
+            return True
+        if pelvis_h < 0.65:
+            return True
+        return False
+
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         obs = self.env.reset()
         if isinstance(obs, tuple):
             obs = obs[0]
+
         self.walker_obs = obs
         self.sim = self.env.sim
-        self.prev_torque = np.zeros(2)
+        self.prev_torque[:] = 0.0
         self.step_count = 0
-        return self._get_exo_obs()
 
-    def step(self, exo_action):
-        """
-        1. Apply exo torque to hip joints
-        2. Walker policy generates muscle activations (reacting to exo)
-        3. Step simulation
-        4. Compute reward focused on effort reduction
-        """
-        exo_action = np.clip(exo_action, -self.MAX_TORQUE, self.MAX_TORQUE)
+        return self._get_obs(), {}
 
-        # Apply exo torque BEFORE the walker decides muscle activations
-        # This way the walker "feels" the exo and can reduce its effort
+    def step(self, action):
+        action = np.asarray(action, dtype=np.float32)
+        action = np.clip(action, -self.MAX_TORQUE, self.MAX_TORQUE)
+
+        # clear previously applied generalized forces
+        self.sim.data.qfrc_applied[:] = 0.0
+
+        # apply exo torques
         if self.hip_r_qvel is not None:
-            self.sim.data.qfrc_applied[self.hip_r_qvel] = exo_action[0]
+            self.sim.data.qfrc_applied[self.hip_r_qvel] = float(action[0])
         if self.hip_l_qvel is not None:
-            self.sim.data.qfrc_applied[self.hip_l_qvel] = exo_action[1]
+            self.sim.data.qfrc_applied[self.hip_l_qvel] = float(action[1])
 
-        # Walker decides muscle activations based on current state
-        # (which includes the effect of exo torque from previous step)
-        muscle_action, _ = self.walker.predict(
-            self.walker_obs, deterministic=True)
+        # walker chooses muscle action from the current last simulator state
+        muscle_action, _ = self.walker.predict(self.walker_obs, deterministic=True)
 
-        # Step simulation with muscle activations
         result = self.env.step(muscle_action)
-        self.walker_obs = result[0]  # full obs for walker
+        self.walker_obs = result[0]
         base_reward = float(result[1])
-        done = result[2]
+        done = bool(result[2])
 
         self.step_count += 1
 
-        # Measure muscle effort THIS step
         act = self.sim.data.act
         if act is not None and len(act) > 0:
             current_effort = float(np.mean(act ** 2))
         else:
             current_effort = self.baseline_effort
 
-        # Reward: encourage effort reduction + maintain walking
-        reward = self._compute_reward(
-            exo_action, base_reward, current_effort)
+        reward = self._compute_reward(action, base_reward, current_effort)
+        terminated = done or self._terminated()
+        truncated = self.step_count >= self.max_steps
 
-        self.prev_torque = exo_action.copy()
-        return self._get_exo_obs(), reward, done, current_effort
+        info = {
+            "current_effort": current_effort,
+            "baseline_effort": self.baseline_effort,
+            "effort_reduction_pct": 100.0 * (
+                (self.baseline_effort - current_effort) / max(self.baseline_effort, 1e-6)
+            ),
+            "mean_abs_torque": float(np.mean(np.abs(action))),
+        }
 
-    def _get_exo_obs(self):
-        """8-dim observation matching real WAWA sensors."""
-        obs = np.zeros(8, dtype=np.float32)
-        try:
-            qpos = self.sim.data.qpos
-            qvel = self.sim.data.qvel
-            if self.hip_r_qpos is not None:
-                obs[0] = qpos[self.hip_r_qpos]
-            if self.hip_l_qpos is not None:
-                obs[1] = qpos[self.hip_l_qpos]
-            if self.hip_r_qvel is not None:
-                obs[2] = qvel[self.hip_r_qvel]
-            if self.hip_l_qvel is not None:
-                obs[3] = qvel[self.hip_l_qvel]
-            if self.knee_r_qpos is not None:
-                obs[4] = qpos[self.knee_r_qpos]
-            if self.knee_l_qpos is not None:
-                obs[5] = qpos[self.knee_l_qpos]
-            obs[6] = self.prev_torque[0] / self.MAX_TORQUE
-            obs[7] = self.prev_torque[1] / self.MAX_TORQUE
-        except Exception:
-            pass
-        return obs
-
-    def _compute_reward(self, action, base_reward, current_effort):
-        """
-        Reward = walking_reward
-               + effort_reduction_bonus (key metric!)
-               - energy_penalty
-               - smoothness_penalty
-        """
-        # Effort reduction relative to baseline
-        effort_reduction = (self.baseline_effort - current_effort) / \
-            max(self.baseline_effort, 1e-6)
-        # Bonus for reducing effort (can be negative if effort increases)
-        effort_bonus = 5.0 * effort_reduction
-
-        # Walking reward (maintain gait quality)
-        walk_reward = base_reward
-
-        # Exo energy penalty
-        energy_penalty = 0.005 * float(np.sum(action ** 2))
-
-        # Smoothness
-        jerk_penalty = 0.02 * float(np.sum(
-            (action - self.prev_torque) ** 2))
-
-        reward = walk_reward + effort_bonus - energy_penalty - jerk_penalty
-        return reward
+        self.prev_torque = action.copy()
+        return self._get_obs(), reward, terminated, truncated, info
 
     def close(self):
         self.env.close()
 
 
-# --- Exo policy network ---
-class ExoPolicy(nn.Module):
-    def __init__(self, state_dim=8, action_dim=2, hidden=128):
-        super().__init__()
-        self.shared = nn.Sequential(
-            nn.Linear(state_dim, hidden),
-            nn.Tanh(),
-            nn.Linear(hidden, hidden),
-            nn.Tanh(),
-        )
-        self.actor_mean = nn.Linear(hidden, action_dim)
-        self.actor_log_std = nn.Parameter(torch.ones(action_dim) * -1.0)
-        self.critic = nn.Linear(hidden, 1)
+def stage2_train_exo(walker_path, total_timesteps=1_000_000):
+    from stable_baselines3 import PPO
+    from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
+    from stable_baselines3.common.monitor import Monitor
 
-    def forward(self, x):
-        h = self.shared(x)
-        return self.actor_mean(h), self.critic(h)
-
-    def get_action(self, state):
-        state_t = torch.FloatTensor(state).unsqueeze(0)
-        with torch.no_grad():
-            mean, value = self.forward(state_t)
-            std = torch.exp(self.actor_log_std)
-            dist = Normal(mean, std)
-            raw = dist.sample()
-            log_prob = dist.log_prob(raw).sum(-1)
-        action = torch.tanh(raw) * 12.0  # WAWA limit
-        return action.squeeze(0).numpy(), log_prob.item(), value.item()
-
-    def evaluate(self, states, actions):
-        mean, values = self.forward(states)
-        std = torch.exp(self.actor_log_std)
-        dist = Normal(mean, std)
-        raw = torch.atanh(torch.clamp(actions / 12.0, -0.999, 0.999))
-        log_probs = dist.log_prob(raw).sum(-1)
-        entropy = dist.entropy().sum(-1)
-        return log_probs, values.squeeze(-1), entropy
-
-
-# --- PPO update ---
-def ppo_update(policy, optimizer, batch):
-    states = torch.FloatTensor(np.array(batch['states']))
-    actions = torch.FloatTensor(np.array(batch['actions']))
-    old_lp = torch.FloatTensor(np.array(batch['log_probs']))
-    returns = torch.FloatTensor(np.array(batch['returns']))
-    advs = torch.FloatTensor(np.array(batch['advantages']))
-
-    if len(advs) > 1:
-        advs = (advs - advs.mean()) / (advs.std() + 1e-8)
-
-    for _ in range(4):
-        lp, vals, ent = policy.evaluate(states, actions)
-        ratio = torch.exp(lp - old_lp)
-        clipped = torch.clamp(ratio, 0.8, 1.2)
-        p_loss = -torch.min(ratio * advs, clipped * advs).mean()
-        v_loss = 0.5 * (returns - vals).pow(2).mean()
-        loss = p_loss + v_loss - 0.01 * ent.mean()
-        optimizer.zero_grad()
-        loss.backward()
-        nn.utils.clip_grad_norm_(policy.parameters(), 0.5)
-        optimizer.step()
-
-    return p_loss.item(), v_loss.item()
-
-
-def compute_gae(rewards, values, dones, gamma=0.99, lam=0.95):
-    advs, rets = [], []
-    gae, nv = 0, 0
-    for t in reversed(range(len(rewards))):
-        if dones[t]:
-            nv, gae = 0, 0
-        delta = rewards[t] + gamma * nv - values[t]
-        gae = delta + gamma * lam * gae
-        advs.insert(0, gae)
-        rets.insert(0, gae + values[t])
-        nv = values[t]
-    return rets, advs
-
-
-# --- Stage 2 training loop ---
-def stage2_train_exo(walker_path, n_episodes=50_000):
     print("\n" + "=" * 60)
-    print("Stage 2: Training Exo Policy (with trained walker)")
-    print(f"  Episodes:   {n_episodes:,}")
-    print(f"  Walker:     {walker_path}")
+    print("Stage 2: Training Exo Policy (SB3 PPO)")
+    print(f"  Timesteps: {total_timesteps:,}")
+    print(f"  Walker:    {walker_path}")
     print("=" * 60)
 
-    env = ExoWithWalker(walker_path)
-    policy = ExoPolicy()
-    optimizer = optim.Adam(policy.parameters(), lr=3e-4)
+    train_env = Monitor(ExoWithWalkerSB3(walker_path))
+    eval_env = Monitor(ExoWithWalkerSB3(walker_path))
 
-    reward_hist = deque(maxlen=100)
-    effort_hist = deque(maxlen=100)
-    torque_hist = deque(maxlen=100)
-    length_hist = deque(maxlen=100)
-    reduction_hist = deque(maxlen=100)
+    model = PPO(
+        "MlpPolicy",
+        train_env,
+        learning_rate=3e-4,
+        n_steps=2048,
+        batch_size=128,
+        n_epochs=10,
+        gamma=0.99,
+        gae_lambda=0.95,
+        clip_range=0.2,
+        ent_coef=0.00,
+        vf_coef=0.5,
+        max_grad_norm=0.5,
+        verbose=1,
+        tensorboard_log=os.path.join(OUT_DIR, "tb_exo"),
+        policy_kwargs=dict(
+            net_arch=dict(pi=[128, 128], vf=[128, 128]),
+            activation_fn=nn.Tanh,
+        ),
+    )
 
-    batch = {k: [] for k in
-             ['states', 'actions', 'log_probs',
-              'rewards', 'values', 'dones']}
+    checkpoint_cb = CheckpointCallback(
+        save_freq=50_000,
+        save_path=os.path.join(OUT_DIR, "exo_checkpoints"),
+        name_prefix="exo",
+    )
+    eval_cb = EvalCallback(
+        eval_env,
+        best_model_save_path=os.path.join(OUT_DIR, "exo_best"),
+        log_path=os.path.join(OUT_DIR, "exo_eval"),
+        eval_freq=25_000,
+        n_eval_episodes=5,
+        deterministic=True,
+    )
 
-    BATCH_SIZE = 32
-    best_reward = -float('inf')
     t0 = time.time()
+    model.learn(
+        total_timesteps=total_timesteps,
+        callback=[checkpoint_cb, eval_cb],
+        progress_bar=True,
+    )
+    train_time = time.time() - t0
 
-    for ep in range(n_episodes):
-        obs = env.reset()
-        ep_reward = 0
-        ep_efforts = []
-        ep_torques = []
+    save_path = os.path.join(OUT_DIR, "exo_policy")
+    model.save(save_path)
 
-        for step in range(200):
-            action, lp, val = policy.get_action(obs)
-            next_obs, reward, done, effort = env.step(action)
+    print(f"\n  Stage 2 complete in {train_time/60:.1f} min")
+    print(f"  Saved: {save_path}.zip")
 
-            batch['states'].append(obs)
-            batch['actions'].append(action)
-            batch['log_probs'].append(lp)
-            batch['rewards'].append(reward)
-            batch['values'].append(val)
-            batch['dones'].append(done)
+    train_env.close()
+    eval_env.close()
 
-            ep_reward += reward
-            ep_efforts.append(effort)
-            ep_torques.append(np.abs(action).mean())
-            obs = next_obs
-            if done:
-                break
 
-        reward_hist.append(ep_reward)
-        length_hist.append(step + 1)
-        torque_hist.append(np.mean(ep_torques))
-        avg_effort = np.mean(ep_efforts) if ep_efforts else 0
-        effort_hist.append(avg_effort)
-        reduction = (env.baseline_effort - avg_effort) / \
-            max(env.baseline_effort, 1e-6) * 100
-        reduction_hist.append(reduction)
+def sanity_check_exo_env(walker_path, n_steps=200):
+    env = ExoWithWalkerSB3(walker_path)
+    obs, _ = env.reset()
 
-        # PPO update
-        if (ep + 1) % BATCH_SIZE == 0:
-            rets, advs = compute_gae(
-                batch['rewards'], batch['values'], batch['dones'])
-            batch['returns'] = rets
-            batch['advantages'] = advs
-            ppo_update(policy, optimizer, batch)
-            batch = {k: [] for k in batch}
+    rewards = []
+    efforts = []
+    torques = []
 
-        # Log
-        if (ep + 1) % 100 == 0:
-            elapsed = time.time() - t0
-            eta = (n_episodes - ep - 1) / ((ep + 1) / elapsed) / 60
+    for _ in range(n_steps):
+        action = env.action_space.sample()
+        obs, reward, terminated, truncated, info = env.step(action)
 
-            avg_r = np.mean(reward_hist)
-            avg_t = np.mean(torque_hist)
-            avg_e = np.mean(effort_hist)
-            avg_red = np.mean(reduction_hist)
-            avg_len = np.mean(length_hist)
+        rewards.append(reward)
+        efforts.append(info["current_effort"])
+        torques.append(info["mean_abs_torque"])
 
-            print(f"  Ep {ep+1:6d}/{n_episodes} | "
-                  f"R={avg_r:7.1f} | "
-                  f"Len={avg_len:5.1f} | "
-                  f"τ={avg_t:4.1f}Nm | "
-                  f"Effort={avg_e:.5f} | "
-                  f"Reduction={avg_red:+.1f}% | "
-                  f"ETA={eta:.0f}min")
+        if not np.all(np.isfinite(obs)):
+            raise RuntimeError("Non-finite observation encountered")
+        if not np.isfinite(reward):
+            raise RuntimeError("Non-finite reward encountered")
 
-            if avg_r > best_reward:
-                best_reward = avg_r
-                torch.save(policy.state_dict(),
-                           os.path.join(OUT_DIR, 'best_exo_policy.pt'))
-
-        if (ep + 1) % 5000 == 0:
-            torch.save(policy.state_dict(),
-                       os.path.join(OUT_DIR, f'exo_ep{ep+1}.pt'))
-
-    # Final save
-    total_time = time.time() - t0
-    torch.save(policy.state_dict(),
-               os.path.join(OUT_DIR, 'exo_policy_final.pt'))
-
-    final_reduction = float(np.mean(reduction_hist))
-    log = {
-        'n_episodes': n_episodes,
-        'total_time_min': float(total_time / 60),
-        'baseline_effort': float(env.baseline_effort),
-        'final_avg_effort': float(np.mean(effort_hist)),
-        'final_avg_reduction_pct': final_reduction,
-        'final_avg_torque_nm': float(np.mean(torque_hist)),
-        'final_avg_reward': float(np.mean(reward_hist)),
-        'final_avg_length': float(np.mean(length_hist)),
-        'best_reward': float(best_reward),
-    }
-    with open(os.path.join(OUT_DIR, 'exo_training_log.json'), 'w') as f:
-        json.dump(log, f, indent=2)
-
-    print("\n" + "=" * 60)
-    print(f"Stage 2 complete in {total_time/60:.1f} min")
-    print("=" * 60)
-    print(f"  Baseline effort:    {log['baseline_effort']:.6f}")
-    print(f"  Final effort:       {log['final_avg_effort']:.6f}")
-    print(f"  EFFORT REDUCTION:   {final_reduction:+.1f}%")
-    print(f"  Avg torque:         {log['final_avg_torque_nm']:.1f} Nm")
-    print(f"  Avg ep length:      {log['final_avg_length']:.0f} steps")
-    print(f"  Saved: {OUT_DIR}/exo_policy_final.pt")
+        if terminated or truncated:
+            obs, _ = env.reset()
 
     env.close()
+    print("\nSanity check passed")
+    print(f"  mean reward: {np.mean(rewards):.3f}")
+    print(f"  mean effort: {np.mean(efforts):.6f}")
+    print(f"  mean |tau| : {np.mean(torques):.3f} Nm")
 
 
 # =====================================================================
@@ -545,11 +495,19 @@ if __name__ == '__main__':
     if stage in ['1', 'both']:
         stage1_train_walker(total_timesteps=500_000)
 
+    if stage == 'check':
+        if not os.path.exists(walker_path + '.zip'):
+            print(f"ERROR: Walker not found at {walker_path}.zip")
+            sys.exit(1)
+        sanity_check_exo_env(walker_path, n_steps=200)
+
     if stage in ['2', 'both']:
         if not os.path.exists(walker_path + '.zip'):
             print(f"ERROR: Walker not found at {walker_path}.zip")
             print("  Run with --stage 1 first")
             sys.exit(1)
-        stage2_train_exo(walker_path, n_episodes=50_000)
+
+        sanity_check_exo_env(walker_path, n_steps=200)
+        stage2_train_exo(walker_path, total_timesteps=1_000_000)
 
     print("\nAll done!")
