@@ -165,10 +165,11 @@ class ExoWithWalkerSB3(gym.Env):
         self._map_root()
         self.baseline_effort = self._measure_baseline()
 
-        # obs = [sin_phi, cos_phi, hip_r, hip_l, hipd_r, hipd_l,
+        # obs = [sin_phi_r, cos_phi_r, sin_phi_l, cos_phi_l,
+        #        hip_r, hip_l, hipd_r, hipd_l,
         #        pelvis_vx, torso_pitch, prev_tau_r, prev_tau_l]
         self.observation_space = spaces.Box(
-            low=-np.inf, high=np.inf, shape=(10,), dtype=np.float32
+            low=-np.inf, high=np.inf, shape=(12,), dtype=np.float32
         )
         self.action_space = spaces.Box(
             low=-self.MAX_TORQUE, high=self.MAX_TORQUE, shape=(2,), dtype=np.float32
@@ -248,44 +249,54 @@ class ExoWithWalkerSB3(gym.Env):
 
     def _estimate_phase(self):
         """
-        Cheap phase proxy for Stage 1:
-        derive phase from right hip angle/velocity.
-        This is not a true gait phase estimator, but it's enough to bootstrap.
+        Cheap bilateral phase proxy for Stage 1:
+        derive a right-leg phase from right hip angle/velocity,
+        then approximate the left leg as half a cycle out of phase.
+        This is still only a proxy, but it gives the policy explicit
+        left/right timing information.
         """
         qpos = self.sim.data.qpos
         qvel = self.sim.data.qvel
 
-        hip = qpos[self.hip_r_qpos] if self.hip_r_qpos is not None else 0.0
-        hipd = qvel[self.hip_r_qvel] if self.hip_r_qvel is not None else 0.0
-        phase = np.arctan2(hipd, hip)   # [-pi, pi]
-        return np.sin(phase), np.cos(phase)
+        hip_r = qpos[self.hip_r_qpos] if self.hip_r_qpos is not None else 0.0
+        hipd_r = qvel[self.hip_r_qvel] if self.hip_r_qvel is not None else 0.0
+
+        phi_r = np.arctan2(hipd_r, hip_r)   # [-pi, pi]
+        phi_l = phi_r + np.pi
+
+        return (
+            np.sin(phi_r), np.cos(phi_r),
+            np.sin(phi_l), np.cos(phi_l),
+        )
 
     def _get_obs(self):
-        obs = np.zeros(10, dtype=np.float32)
+        obs = np.zeros(12, dtype=np.float32)
         qpos = self.sim.data.qpos
         qvel = self.sim.data.qvel
 
-        sin_phi, cos_phi = self._estimate_phase()
-        obs[0] = sin_phi
-        obs[1] = cos_phi
+        sin_phi_r, cos_phi_r, sin_phi_l, cos_phi_l = self._estimate_phase()
+        obs[0] = sin_phi_r
+        obs[1] = cos_phi_r
+        obs[2] = sin_phi_l
+        obs[3] = cos_phi_l
 
         if self.hip_r_qpos is not None:
-            obs[2] = qpos[self.hip_r_qpos]
+            obs[4] = qpos[self.hip_r_qpos]
         if self.hip_l_qpos is not None:
-            obs[3] = qpos[self.hip_l_qpos]
+            obs[5] = qpos[self.hip_l_qpos]
         if self.hip_r_qvel is not None:
-            obs[4] = qvel[self.hip_r_qvel]
+            obs[6] = qvel[self.hip_r_qvel]
         if self.hip_l_qvel is not None:
-            obs[5] = qvel[self.hip_l_qvel]
+            obs[7] = qvel[self.hip_l_qvel]
 
         if self.root_x_qvel is not None and self.root_x_qvel < len(qvel):
-            obs[6] = qvel[self.root_x_qvel]
+            obs[8] = qvel[self.root_x_qvel]
 
         if self.torso_pitch_qpos is not None:
-            obs[7] = qpos[self.torso_pitch_qpos]
+            obs[9] = qpos[self.torso_pitch_qpos]
 
-        obs[8] = self.prev_torque[0] / self.MAX_TORQUE
-        obs[9] = self.prev_torque[1] / self.MAX_TORQUE
+        obs[10] = self.prev_torque[0] / self.MAX_TORQUE
+        obs[11] = self.prev_torque[1] / self.MAX_TORQUE
         return obs
 
     def _compute_reward(self, action, base_reward, current_effort):
