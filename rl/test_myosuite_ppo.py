@@ -1,8 +1,8 @@
-import gym
+from myosuite.utils import gym as myogym
 import myosuite
 from stable_baselines3 import PPO
 
-env = gym.make("myoLegWalk-v0")
+env = myogym.make("myoLegWalk-v0")
 
 model = PPO(
     "MlpPolicy",
@@ -11,6 +11,7 @@ model = PPO(
     n_steps=2048,
     batch_size=64,
     learning_rate=3e-4,
+    device="cpu",
 )
 
 model.learn(total_timesteps=500_000)
