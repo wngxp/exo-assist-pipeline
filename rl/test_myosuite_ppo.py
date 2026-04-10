@@ -16,10 +16,12 @@ model = PPO(
 
 model.learn(total_timesteps=500_000)
 
-model.save("walker_baseline")
+model.save("rl_output/walker_policy")
+print("Saved walker to rl_output/walker_policy.zip")
 
 # ===== Step 2: Evaluate =====
-obs = env.reset()
+reset_out = env.reset()
+obs = reset_out[0] if isinstance(reset_out, tuple) else reset_out
 episode_steps = 0
 
 for i in range(2000):
@@ -39,5 +41,6 @@ for i in range(2000):
 
     if done:
         print(f"[EVAL END] step={episode_steps}")
-        obs = env.reset()
+        reset_out = env.reset()
+        obs = reset_out[0] if isinstance(reset_out, tuple) else reset_out
         episode_steps = 0
