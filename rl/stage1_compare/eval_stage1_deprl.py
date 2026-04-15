@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from pathlib import Path
 
 import myosuite  # noqa: F401
@@ -16,10 +17,32 @@ RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 ENV_ID = "myoLegWalk-v0"
 N_EPISODES = 10
 
+BASELINE_DIR = Path("baselines_DEPRL/myoLegWalk_20230514/myoLeg")
+CHECKPOINT_PATH = BASELINE_DIR / "checkpoints" / "step_150000000.pt"
+CONFIG_PATH = BASELINE_DIR / "config.yaml"
+
+
+def resolve_local_baseline() -> tuple[Path, Path]:
+    """Resolve the local DEP-RL baseline files.
+
+    This script is intended to run offline after the baseline has been
+    downloaded once. We do not want to rely on Google Drive every run.
+    """
+    if not CHECKPOINT_PATH.exists() or not CONFIG_PATH.exists():
+        raise FileNotFoundError(
+            "Local DEP-RL baseline files not found. Expected:\n"
+            f"  checkpoint: {CHECKPOINT_PATH.resolve()}\n"
+            f"  config: {CONFIG_PATH.resolve()}\n"
+            "Download/cache the DEP-RL baseline once, then rerun this script."
+        )
+    return CHECKPOINT_PATH, CONFIG_PATH
+
 
 def save_results(lengths: list[int]) -> None:
     summary = {
         "model": "deprl_baseline",
+        "checkpoint_path": str(CHECKPOINT_PATH),
+        "config_path": str(CONFIG_PATH),
         "env_id": ENV_ID,
         "n_episodes": len(lengths),
         "episode_lengths": lengths,
@@ -49,7 +72,14 @@ def main() -> None:
     env = myogym.make(ENV_ID, reset_type="random")
     env = env_wrappers.GymWrapper(env)
 
-    print(f"Loading DEP-RL baseline for {ENV_ID} ...")
+    checkpoint_path, config_path = resolve_local_baseline()
+    print(f"Loading DEP-RL baseline for {ENV_ID} from local files ...")
+    print(f"  checkpoint: {checkpoint_path.resolve()}")
+    print(f"  config: {config_path.resolve()}")
+
+    # Point deprl at the already-downloaded local baseline so evaluation is
+    # reproducible and does not depend on Google Drive access on every run.
+    os.environ["DEPRL_BASELINE_PATH"] = str(BASELINE_DIR.resolve())
     policy = deprl.load_baseline(env)
 
     lengths: list[int] = []
