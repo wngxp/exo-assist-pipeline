@@ -8,7 +8,11 @@ from stable_baselines3 import PPO
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from rl.baselines.load_reference_walker import load_reference_walker
+from rl.baselines.load_deprl_reference import (
+    BASELINE_DIR,
+    load_deprl_reference,
+    wrap_deprl_env,
+)
 from rl.envs.exo_with_walker_env import ExoWithWalkerSB3
 
 OUT_DIR = "rl_output"
@@ -17,6 +21,8 @@ OUT_ROOT = RL_DIR / OUT_DIR
 
 
 def _resolve_rl_path(path):
+    if path is None:
+        return str(BASELINE_DIR.resolve())
     if os.path.isabs(path):
         return path
     return str((RL_DIR / path).resolve())
@@ -90,8 +96,9 @@ def _save_rollout(rollout):
 def _eval_walker_only(walker_path, n_episodes, max_steps, rollout):
     from myosuite.utils import gym as myogym
 
-    env = myogym.make("myoLegWalk-v0")
-    walker = load_reference_walker(walker_path)
+    base_env = myogym.make("myoLegWalk-v0")
+    env = wrap_deprl_env(base_env)
+    walker = load_deprl_reference(env, walker_path)
 
     rewards = []
     efforts = []
@@ -107,7 +114,7 @@ def _eval_walker_only(walker_path, n_episodes, max_steps, rollout):
             action, _ = walker.predict(obs, deterministic=True)
             obs, reward, terminated, truncated, info = _normalize_step(env.step(action))
 
-            effort = _current_effort(env.unwrapped.sim)
+            effort = _current_effort(base_env.unwrapped.sim)
             mean_torque = 0.0
 
             termination_source = None
@@ -218,6 +225,6 @@ def run_eval(walker_path, exo_path, n_episodes=5, max_steps=300):
 
 
 if __name__ == "__main__":
-    walker_path = os.path.join(OUT_DIR, "walker_policy")
+    walker_path = None
     exo_path = os.path.join(OUT_DIR, "exo_policy")
     run_eval(walker_path, exo_path)

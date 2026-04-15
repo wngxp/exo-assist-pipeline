@@ -2,13 +2,13 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
-from rl.baselines.load_reference_walker import load_reference_walker
+from rl.baselines.load_deprl_reference import load_deprl_reference, wrap_deprl_env
 
 
 class ExoWithWalkerSB3(gym.Env):
     """
     Stage-1 bootstrap environment:
-    - frozen walker supplies nominal locomotion
+    - frozen local DEP-RL walker supplies nominal locomotion
     - exo policy adds 2 hip torques
     - reward favors walking quality + lower effort proxy + smooth torque
 
@@ -19,18 +19,19 @@ class ExoWithWalkerSB3(gym.Env):
     metadata = {"render_modes": []}
     MAX_TORQUE = 12.0
 
-    def __init__(self, walker_path, max_steps=300):
+    def __init__(self, walker_path=None, max_steps=300):
         super().__init__()
 
         from myosuite.utils import gym as myogym
 
-        self.env = myogym.make("myoLegWalk-v0")
+        self.base_env = myogym.make("myoLegWalk-v0")
+        self.env = wrap_deprl_env(self.base_env)
         obs = self.env.reset()
         if isinstance(obs, tuple):
             obs = obs[0]
 
-        self.walker = load_reference_walker(walker_path)
-        self.sim = self.env.unwrapped.sim
+        self.walker = load_deprl_reference(self.env, walker_path)
+        self.sim = self.base_env.unwrapped.sim
         self.model_mj = self.sim.model
 
         self.max_steps = max_steps
@@ -57,6 +58,19 @@ class ExoWithWalkerSB3(gym.Env):
         self.action_space = spaces.Box(
             low=-self.MAX_TORQUE, high=self.MAX_TORQUE, shape=(2,), dtype=np.float32
         )
+
+    @staticmethod
+    def _normalize_step(result):
+        if len(result) == 5:
+            obs, reward, terminated, truncated, info = result
+            done = bool(terminated or truncated)
+            return obs, float(reward), done, info
+
+        if len(result) == 4:
+            obs, reward, done, info = result
+            return obs, float(reward), bool(done), info
+
+        raise ValueError(f"Unexpected step result length: {len(result)}")
 
     def _map_joints(self):
         self.hip_r_qpos = None
@@ -120,11 +134,10 @@ class ExoWithWalkerSB3(gym.Env):
 
             for _ in range(200):
                 action, _ = self.walker.predict(obs, deterministic=True)
-                result = self.env.step(action)
-                obs = result[0]
-                done = result[2]
+                obs, reward, done, info = self._normalize_step(self.env.step(action))
+                del reward, info
 
-                act = self.env.unwrapped.sim.data.act
+                act = self.base_env.unwrapped.sim.data.act
                 if act is not None and len(act) > 0:
                     ep_efforts.append(float(np.mean(act**2)))
                 if done:
@@ -240,7 +253,7 @@ class ExoWithWalkerSB3(gym.Env):
             obs = obs[0]
 
         self.walker_obs = obs
-        self.sim = self.env.unwrapped.sim
+        self.sim = self.base_env.unwrapped.sim
         self.prev_torque[:] = 0.0
         self.step_count = 0
 
@@ -267,10 +280,10 @@ class ExoWithWalkerSB3(gym.Env):
         # walker chooses muscle action from the current last simulator state
         muscle_action, _ = self.walker.predict(self.walker_obs, deterministic=True)
 
-        result = self.env.step(muscle_action)
-        self.walker_obs = result[0]
-        base_reward = float(result[1])
-        done = bool(result[2])
+        self.walker_obs, base_reward, done, env_info = self._normalize_step(
+            self.env.step(muscle_action)
+        )
+        del env_info
 
         self.step_count += 1
 

@@ -11,6 +11,7 @@ from stable_baselines3.common.monitor import Monitor
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from rl.baselines.load_deprl_reference import BASELINE_DIR
 from rl.envs.exo_with_walker_env import ExoWithWalkerSB3
 
 OUT_DIR = "rl_output"
@@ -19,19 +20,21 @@ OUT_ROOT = RL_DIR / OUT_DIR
 
 
 def _resolve_rl_path(path):
+    if path is None:
+        return str(BASELINE_DIR.resolve())
     if os.path.isabs(path):
         return path
     return str((RL_DIR / path).resolve())
 
 
-def train_exo(walker_path, total_timesteps=1_000_000):
+def train_exo(walker_path=None, total_timesteps=1_000_000):
     walker_path = _resolve_rl_path(walker_path)
     os.makedirs(OUT_ROOT, exist_ok=True)
 
     print("\n" + "=" * 60)
     print("Stage 2: Training Exo Policy (SB3 PPO)")
     print(f"  Timesteps: {total_timesteps:,}")
-    print(f"  Walker:    {walker_path}")
+    print(f"  Walker baseline: {walker_path}")
     print("=" * 60)
 
     train_env = Monitor(ExoWithWalkerSB3(walker_path))
@@ -93,5 +96,4 @@ def train_exo(walker_path, total_timesteps=1_000_000):
 
 
 if __name__ == "__main__":
-    walker_path = os.path.join(OUT_DIR, "walker_policy")
-    train_exo(walker_path)
+    train_exo()

@@ -11,4 +11,4 @@ from rl.scripts.eval_exo_stage2 import OUT_DIR, run_eval
 
 
 if __name__ == "__main__":
-    run_eval(f"{OUT_DIR}/walker_policy", f"{OUT_DIR}/exo_policy")
+    run_eval(None, f"{OUT_DIR}/exo_policy")
