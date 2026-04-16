@@ -23,6 +23,8 @@ from rl.baselines.load_deprl_reference import load_deprl_reference, wrap_deprl_e
 ENV_ID = "myoLegWalk-v0"
 FPS = 30
 MAX_EPISODE_LENGTH = 1000
+MAX_RENDER_TRIES = 10
+MIN_GOOD_EPISODE_LENGTH = 900
 DEFAULT_WIDTH = 960
 DEFAULT_HEIGHT = 720
 RL_DIR = Path(__file__).resolve().parents[1]
@@ -183,9 +185,7 @@ def run_episode(model, env, render_frame):
         steps += 1
         frames.append(render_frame())
 
-    terminated_early = done
-    print(f"Episode length: {steps}")
-    print(f"Terminated early: {terminated_early}")
+    terminated_early = done and steps < MAX_EPISODE_LENGTH
     return frames, steps, terminated_early
 
 
@@ -207,13 +207,34 @@ def main():
         width, height = resolve_render_size(model_mj)
         render_frame = build_offscreen_renderer(sim, model_mj, data_mj, width, height)
 
-        frames, steps, terminated_early = run_episode(model, env, render_frame)
-        del steps, terminated_early
+        best_frames = None
+        best_steps = -1
+        best_terminated_early = True
 
-        if not frames:
+        for trial in range(1, MAX_RENDER_TRIES + 1):
+            frames, steps, terminated_early = run_episode(model, env, render_frame)
+            print(
+                f"[RENDER] trial={trial} steps={steps} terminated_early={terminated_early}"
+            )
+
+            if steps > best_steps:
+                best_frames = frames
+                best_steps = steps
+                best_terminated_early = terminated_early
+
+            if steps >= MIN_GOOD_EPISODE_LENGTH:
+                print(
+                    f"Using trial {trial} as render episode because it reached "
+                    f"{steps} steps."
+                )
+                break
+
+        if not best_frames:
             raise RuntimeError("No RGB frames were captured from the MuJoCo renderer.")
 
-        save_video(frames)
+        print(f"Selected render episode length: {best_steps}")
+        print(f"Selected render terminated early: {best_terminated_early}")
+        save_video(best_frames)
     finally:
         env.close()
 
