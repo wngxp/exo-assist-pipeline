@@ -125,10 +125,17 @@ def build_offscreen_renderer(sim, model, data, width, height):
                 candidate = getattr(raw_model, attr, None)
                 if candidate is not None:
                     raw_model = candidate
+
+            raw_data = data
+            for attr in ("_data", "data"):
+                candidate = getattr(raw_data, attr, None)
+                if candidate is not None:
+                    raw_data = candidate
+
             renderer = mujoco.Renderer(raw_model, height=height, width=width)
 
             def render_frame():
-                renderer.update_scene(data)
+                renderer.update_scene(raw_data)
                 frame = renderer.render()
                 return _frame_to_uint8(frame)
 
