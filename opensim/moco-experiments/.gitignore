@@ -1,8 +1,0 @@
-_temp_*
-data/
-*.sto
-!coordinates.sto
-!grf_walk.xml
-optimization_log.csv
-__pycache__/
-.ipynb_checkpoints/

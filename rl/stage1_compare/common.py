@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 RL_DIR = REPO_ROOT / "rl"
 RL_OUTPUT_DIR = RL_DIR / "rl_output"
 STAGE1_COMPARE_DIR = RL_DIR / "stage1_compare"
-RESULTS_DIR = STAGE1_COMPARE_DIR / "results"
+RESULTS_DIR = RL_OUTPUT_DIR / "stage1" / "compare"
 
 
 def ensure_results_dir() -> Path:

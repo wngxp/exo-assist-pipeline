@@ -18,7 +18,8 @@ FPS = 30
 MAX_EPISODE_LENGTH = 1000
 DEFAULT_WIDTH = 960
 DEFAULT_HEIGHT = 720
-OUTPUT_PATH = Path("/Users/wxp/dev/exo-assist-pipeline/rl/rl_output/stage1_reference.mp4")
+RL_DIR = Path(__file__).resolve().parents[1]
+OUTPUT_PATH = RL_DIR / "rl_output" / "stage1" / "reference" / "stage1_reference.mp4"
 
 
 def _normalize_step(result):

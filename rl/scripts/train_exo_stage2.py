@@ -14,7 +14,7 @@ if __package__ in {None, ""}:
 from rl.baselines.load_deprl_reference import BASELINE_DIR
 from rl.envs.exo_with_walker_env import ExoWithWalkerSB3
 
-OUT_DIR = "rl_output"
+OUT_DIR = "rl_output/stage2"
 RL_DIR = Path(__file__).resolve().parents[1]
 OUT_ROOT = RL_DIR / OUT_DIR
 
@@ -54,7 +54,7 @@ def train_exo(walker_path=None, total_timesteps=1_000_000):
         vf_coef=0.5,
         max_grad_norm=0.5,
         verbose=1,
-        tensorboard_log=str(OUT_ROOT / "tb_exo"),
+        tensorboard_log=str(OUT_ROOT / "tensorboard"),
         device="cpu",
         policy_kwargs=dict(
             net_arch=dict(pi=[128, 128], vf=[128, 128]),
@@ -64,13 +64,13 @@ def train_exo(walker_path=None, total_timesteps=1_000_000):
 
     checkpoint_cb = CheckpointCallback(
         save_freq=50_000,
-        save_path=str(OUT_ROOT / "exo_checkpoints"),
+        save_path=str(OUT_ROOT / "checkpoints"),
         name_prefix="exo",
     )
     eval_cb = EvalCallback(
         eval_env,
-        best_model_save_path=str(OUT_ROOT / "exo_best"),
-        log_path=str(OUT_ROOT / "exo_eval"),
+        best_model_save_path=str(OUT_ROOT / "best"),
+        log_path=str(OUT_ROOT / "eval"),
         eval_freq=25_000,
         n_eval_episodes=5,
         deterministic=True,

@@ -6,9 +6,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-ROLLOUT_PATH = Path("/Users/wxp/dev/exo-assist-pipeline/rl/rl_output/stage2_eval_rollout.npz")
-FIGURE_PATH = Path("/Users/wxp/dev/exo-assist-pipeline/rl/rl_output/stage2_torque_vs_gait_v2.png")
-SUMMARY_PATH = Path("/Users/wxp/dev/exo-assist-pipeline/rl/rl_output/stage2_torque_vs_gait_v2_summary.json")
+RL_DIR = Path(__file__).resolve().parents[1]
+ROLLOUT_PATH = RL_DIR / "rl_output" / "stage2" / "eval" / "stage2_eval_rollout.npz"
+FIGURE_PATH = RL_DIR / "rl_output" / "analysis" / "stage2_torque_vs_gait_v2.png"
+SUMMARY_PATH = RL_DIR / "rl_output" / "analysis" / "stage2_torque_vs_gait_v2_summary.json"
 
 MIN_CYCLE_STEPS = 8
 MAX_CYCLE_STEPS = 80
@@ -112,7 +113,7 @@ def interpolate_cycle(values, start_idx, stop_idx):
 
 def save_summary(num_samples, cycle_starts, cycle_lengths, tau_r, tau_l):
     summary = {
-        "rollout_path": str(ROLLOUT_PATH),
+        "rollout_path": str(ROLLOUT_PATH.resolve()),
         "number_of_samples": int(num_samples),
         "number_of_detected_cycle_starts": int(len(cycle_starts)),
         "number_of_cycles_used": int(len(cycle_lengths)),

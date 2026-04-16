@@ -1,22 +1,26 @@
 # AGENTS.md
 
 ## Project Overview
-This repository implements a two-stage RL pipeline for a hip exoskeleton:
+This repository implements the current two-stage RL pipeline for a hip exoskeleton:
 
-- Stage 1: Learn a walking policy (MyoSuite)
-- Stage 2: Add exoskeleton torque on top of the learned walker
+- Stage 1: fixed local DEP-RL reference walker
+- Stage 2: SB3 PPO exoskeleton policy on top of the fixed walker
 
 ---
 
 ## Directory Structure
 
 rl/
-  stage1_compare/     # Evaluation + comparison ONLY (no training)
-  rl_output/          # Saved models and VecNormalize stats
-  envs/               # Custom environments
-  baselines/          # Reference or baseline implementations
-  scripts/            # Stage 2 scripts
-  legacy/             # Deprecated / unused scripts (do not delete)
+  baselines/          # Canonical local baseline loading
+  baselines_DEPRL/    # Local DEP-RL reference walker files
+  envs/               # Stage 2 environment
+  scripts/            # Authoritative Stage 1 / Stage 2 entrypoints
+  stage1_compare/     # Comparison / evaluation / rendering only
+  stage2_analysis/    # Plotting / analysis only
+  rl_output/          # Organized outputs
+    stage1/
+    stage2/
+    analysis/
 
 ---
 
@@ -42,24 +46,29 @@ rl/
 - Read saved outputs and summarize results
 - MUST NOT run environments or training
 
----
-
-## Stage 1 (Walker)
-
-- Simple baseline: tutorial PPO (no normalization)
-- v2: uses VecNormalize
-
-Important:
-- v2 models REQUIRE VecNormalize stats to evaluate correctly
-- Always load:
-  rl_output/walker_policy_stage1_v2_vecnormalize.pkl
+### Rendering / plotting scripts
+- render_*.py = video only
+- plot_*.py = plotting only
 
 ---
 
-## Stage 2 (Exoskeleton)
+## Authoritative Entry Points
 
-- Must NOT modify Stage 1 training scripts
-- Depends on a stable Stage 1 walker
+- Stage 1 reference evaluation:
+  `python rl/scripts/run_stage1_reference.py`
+- Stage 2 training:
+  `python rl/scripts/train_exo_stage2.py`
+- Stage 2 evaluation:
+  `python rl/scripts/eval_exo_stage2.py`
+
+Comparison / analysis:
+- `python rl/stage1_compare/eval_stage1_deprl.py`
+- `python rl/stage1_compare/compare_stage1_results.py`
+- `python rl/stage1_compare/render_stage1_reference.py`
+- `python rl/stage2_analysis/plot_torque_vs_gait.py`
+
+Note:
+- legacy PPO comparison scripts may require user-supplied checkpoints because the old PPO experiment artifacts are not part of the cleaned repo checkpoint
 
 ---
 
@@ -67,18 +76,9 @@ Important:
 
 1. DO NOT mix training and evaluation in the same script
 2. DO NOT overwrite result files — always use unique filenames
-3. DO NOT delete scripts — move to rl/legacy/ instead
-4. DO NOT modify Stage 2 code when working on Stage 1
-5. Preserve reproducibility: paths and model names must stay consistent
-
----
-
-## Naming Conventions
-
-- simple → baseline / tutorial implementation
-- v2 / v3 → iterative improvements
-- best → best checkpoint from training
-- final → last checkpoint
+3. Keep output paths under `rl/rl_output/stage1`, `rl/rl_output/stage2`, or `rl/rl_output/analysis`
+4. Preserve reproducibility: local DEP-RL files are the canonical Stage 1 walker source
+5. Prefer small direct scripts over duplicated experiments or wrappers
 
 ---
 
@@ -86,5 +86,5 @@ Important:
 
 Changes are complete when:
 - scripts run without errors
-- outputs are saved under rl/stage1_compare/results/
+- outputs are saved under the standardized `rl/rl_output/` layout
 - no existing functionality is broken

@@ -15,7 +15,7 @@ from rl.baselines.load_deprl_reference import (
 )
 from rl.envs.exo_with_walker_env import ExoWithWalkerSB3
 
-OUT_DIR = "rl_output"
+OUT_DIR = "rl_output/stage2"
 RL_DIR = Path(__file__).resolve().parents[1]
 OUT_ROOT = RL_DIR / OUT_DIR
 
@@ -87,8 +87,9 @@ def _print_summary(label, rewards, efforts, torques, episode_lengths):
 
 
 def _save_rollout(rollout):
-    os.makedirs(OUT_ROOT, exist_ok=True)
-    out_path = OUT_ROOT / "stage2_eval_rollout.npz"
+    eval_root = OUT_ROOT / "eval"
+    os.makedirs(eval_root, exist_ok=True)
+    out_path = eval_root / "stage2_eval_rollout.npz"
     np.savez(out_path, **{key: np.array(value) for key, value in rollout.items()})
     print(f"Saved rollout to: {out_path}")
 

@@ -17,7 +17,7 @@ ENV_ID = "myoLegWalk-v0"
 N_EPISODES = 10
 
 RL_DIR = Path(__file__).resolve().parents[1]
-RESULTS_DIR = RL_DIR / "results" / "stage1_reference"
+RESULTS_DIR = RL_DIR / "rl_output" / "stage1" / "reference"
 BASELINE_DIR = RL_DIR / "baselines_DEPRL" / "myoLegWalk_20230514" / "myoLeg"
 CHECKPOINT_PATH = BASELINE_DIR / "checkpoints" / "step_150000000.pt"
 CONFIG_PATH = BASELINE_DIR / "config.yaml"

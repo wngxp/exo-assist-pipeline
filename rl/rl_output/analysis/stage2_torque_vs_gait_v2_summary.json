@@ -1,0 +1,19 @@
+{
+  "rollout_path": "/Users/wxp/dev/exo-assist-pipeline/rl/rl_output/stage2/eval/stage2_eval_rollout.npz",
+  "number_of_samples": 130,
+  "number_of_detected_cycle_starts": 5,
+  "number_of_cycles_used": 4,
+  "cycle_lengths_in_steps": [
+    26,
+    26,
+    26,
+    26
+  ],
+  "mean_cycle_length": 26.0,
+  "min_cycle_length": 26,
+  "max_cycle_length": 26,
+  "mean_abs_torque_right": 3.5102198674128604,
+  "mean_abs_torque_left": 1.7022768984047265,
+  "peak_abs_torque_right": 8.46261215209961,
+  "peak_abs_torque_left": 4.767791748046875
+}

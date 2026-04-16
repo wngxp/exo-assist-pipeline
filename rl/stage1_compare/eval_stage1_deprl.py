@@ -11,13 +11,14 @@ from myosuite.utils import gym as myogym
 import deprl
 from deprl import env_wrappers
 
-RESULTS_DIR = Path("rl/stage1_compare/results")
+RL_DIR = Path(__file__).resolve().parents[1]
+RESULTS_DIR = RL_DIR / "rl_output" / "stage1" / "compare"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 ENV_ID = "myoLegWalk-v0"
 N_EPISODES = 10
 
-BASELINE_DIR = Path("baselines_DEPRL/myoLegWalk_20230514/myoLeg")
+BASELINE_DIR = RL_DIR / "baselines_DEPRL" / "myoLegWalk_20230514" / "myoLeg"
 CHECKPOINT_PATH = BASELINE_DIR / "checkpoints" / "step_150000000.pt"
 CONFIG_PATH = BASELINE_DIR / "config.yaml"
 
