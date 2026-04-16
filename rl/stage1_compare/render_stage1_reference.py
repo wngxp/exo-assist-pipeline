@@ -179,7 +179,7 @@ def run_episode(model, env, render_frame):
     steps = 0
 
     while not done and steps < MAX_EPISODE_LENGTH:
-        action = model(obs)
+        action, _ = model.predict(obs, deterministic=True)
         result = env.step(action)
         obs, reward, done, info = _normalize_step(result)
         del reward, info

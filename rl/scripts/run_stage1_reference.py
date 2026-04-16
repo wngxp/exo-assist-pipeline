@@ -11,10 +11,15 @@ import myosuite  # noqa: F401
 from myosuite.utils import gym as myogym
 
 import deprl
-from deprl import env_wrappers
+
+from rl.baselines.load_deprl_reference import (
+    resolve_deprl_reference_paths,
+    wrap_deprl_env,
+)
 
 ENV_ID = "myoLegWalk-v0"
 N_EPISODES = 10
+DEFAULT_RESET_TYPE = "random"
 
 RL_DIR = Path(__file__).resolve().parents[1]
 RESULTS_DIR = RL_DIR / "rl_output" / "stage1" / "reference"
@@ -34,41 +39,135 @@ def resolve_local_baseline() -> tuple[Path, Path]:
     return CHECKPOINT_PATH, CONFIG_PATH
 
 
-def run_eval(policy, env) -> list[int]:
-    lengths: list[int] = []
-
-    for episode in range(1, N_EPISODES + 1):
-        reset_out = env.reset()
-        obs = reset_out[0] if isinstance(reset_out, tuple) else reset_out
-
-        done = False
-        steps = 0
-
-        while not done:
-            action = policy(obs)
-            result = env.step(action)
-
-            if len(result) == 5:
-                obs, reward, terminated, truncated, info = result
-                done = terminated or truncated
-            else:
-                obs, reward, done, info = result
-
-            steps += 1
-
-        lengths.append(steps)
-        print(f"[REFERENCE] episode={episode} length={steps}")
-
-    return lengths
+def make_stage1_env(reset_type: str = DEFAULT_RESET_TYPE):
+    base_env = myogym.make(ENV_ID, reset_type=reset_type)
+    env = wrap_deprl_env(base_env)
+    return base_env, env
 
 
-def save_results(lengths: list[int]) -> None:
+def load_reference_policy(env, baseline_dir: str | Path | None = None):
+    if baseline_dir is None:
+        checkpoint_path, config_path = resolve_local_baseline()
+        baseline_root = BASELINE_DIR.resolve()
+    else:
+        baseline_root, checkpoint_path, config_path = resolve_deprl_reference_paths(
+            baseline_dir
+        )
+
+    print(f"Loading DEP-RL baseline for {ENV_ID} from local files ...")
+    print(f"  checkpoint: {checkpoint_path.resolve()}")
+    print(f"  config: {config_path.resolve()}")
+
+    os.environ["DEPRL_BASELINE_PATH"] = str(baseline_root)
+    return deprl.load_baseline(env)
+
+
+def _normalize_reset_output(reset_out):
+    return reset_out[0] if isinstance(reset_out, tuple) else reset_out
+
+
+def _normalize_step_output(result):
+    if len(result) == 5:
+        obs, reward, terminated, truncated, info = result
+        return obs, float(reward), bool(terminated), bool(truncated), info
+
+    if len(result) == 4:
+        obs, reward, done, info = result
+        return obs, float(reward), bool(done), False, info
+
+    raise ValueError(f"Unexpected step result length: {len(result)}")
+
+
+def run_reference_episode(
+    policy,
+    env,
+    *,
+    capture_frames: bool = False,
+    render_frame=None,
+    max_steps: int | None = None,
+) -> dict:
+    if capture_frames and render_frame is None:
+        raise ValueError("render_frame must be provided when capture_frames=True")
+
+    reset_out = env.reset()
+    obs = _normalize_reset_output(reset_out)
+
+    frames = []
+    if capture_frames:
+        frames.append(render_frame())
+
+    steps = 0
+    terminated = False
+    truncated = False
+    info = {}
+
+    while max_steps is None or steps < max_steps:
+        action = policy(obs)
+        obs, reward, terminated, truncated, info = _normalize_step_output(env.step(action))
+        del reward
+
+        steps += 1
+        if capture_frames:
+            frames.append(render_frame())
+
+        if terminated or truncated:
+            break
+
+    reached_max_steps = bool(
+        max_steps is not None and steps >= max_steps and not (terminated or truncated)
+    )
+    terminated_early = bool(
+        max_steps is not None and (terminated or truncated) and steps < max_steps
+    )
+
+    return {
+        "episode_length": steps,
+        "terminated": terminated,
+        "truncated": truncated,
+        "terminated_early": terminated_early,
+        "reached_max_steps": reached_max_steps,
+        "frames": frames,
+        "info": info,
+    }
+
+
+def evaluate_reference(
+    policy,
+    env,
+    *,
+    n_episodes: int = N_EPISODES,
+    capture_frames: bool = False,
+    render_frame=None,
+    max_steps: int | None = None,
+) -> list[dict]:
+    episodes: list[dict] = []
+
+    for episode_idx in range(1, n_episodes + 1):
+        episode = run_reference_episode(
+            policy,
+            env,
+            capture_frames=capture_frames,
+            render_frame=render_frame,
+            max_steps=max_steps,
+        )
+        episodes.append(episode)
+        print(f"[REFERENCE] episode={episode_idx} length={episode['episode_length']}")
+
+    return episodes
+
+
+def save_results(
+    lengths: list[int],
+    *,
+    checkpoint_path: Path = CHECKPOINT_PATH,
+    config_path: Path = CONFIG_PATH,
+) -> None:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
     summary = {
         "model": "deprl_baseline",
-        "checkpoint_path": str(CHECKPOINT_PATH),
-        "config_path": str(CONFIG_PATH),
+        "checkpoint_path": str(checkpoint_path),
+        "config_path": str(config_path),
         "env_id": ENV_ID,
         "n_episodes": len(lengths),
         "episode_lengths": lengths,
@@ -95,20 +194,15 @@ def save_results(lengths: list[int]) -> None:
 
 
 def main() -> None:
-    env = myogym.make(ENV_ID, reset_type="random")
-    env = env_wrappers.GymWrapper(env)
+    _, env = make_stage1_env()
 
     try:
         checkpoint_path, config_path = resolve_local_baseline()
-        print(f"Loading DEP-RL baseline for {ENV_ID} from local files ...")
-        print(f"  checkpoint: {checkpoint_path.resolve()}")
-        print(f"  config: {config_path.resolve()}")
+        policy = load_reference_policy(env)
 
-        os.environ["DEPRL_BASELINE_PATH"] = str(BASELINE_DIR.resolve())
-        policy = deprl.load_baseline(env)
-
-        lengths = run_eval(policy, env)
-        save_results(lengths)
+        episodes = evaluate_reference(policy, env)
+        lengths = [episode["episode_length"] for episode in episodes]
+        save_results(lengths, checkpoint_path=checkpoint_path, config_path=config_path)
 
         print("\nSummary:")
         print(f"  mean episode length: {sum(lengths) / len(lengths):.2f}")
