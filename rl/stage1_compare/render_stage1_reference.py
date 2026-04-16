@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
+
+# Headless offscreen rendering setup for remote Linux machines.
+# Must be configured before MuJoCo / dm_control / MyoSuite imports.
+if not os.environ.get("DISPLAY"):
+    os.environ.setdefault("MUJOCO_GL", "egl")
+    os.environ.setdefault("PYOPENGL_PLATFORM", "egl")
 
 import imageio.v2 as imageio
 import myosuite  # noqa: F401
@@ -148,7 +155,9 @@ def build_offscreen_renderer(sim, model, data, width, height):
 
     raise RuntimeError(
         "Could not create a MuJoCo offscreen renderer. "
-        "Tried simulator.render(), mujoco.Renderer, and mujoco_py offscreen context."
+        "Tried simulator.render(), mujoco.Renderer, and mujoco_py offscreen context. "
+        "On a headless Linux machine, make sure offscreen rendering is configured "
+        "before imports (for example MUJOCO_GL=egl)."
     )
 
 
