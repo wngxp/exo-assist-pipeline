@@ -60,6 +60,9 @@ def main() -> None:
     print(f"Saved reference data to: {out_path.resolve()}")
     print(f"Frames: {num_frames}")
     print(f"Duration: {times[-1] - times[0]:.3f} s")
+    
+    print("first 10 t values:", times[:10])
+    print("dt first 10:", np.diff(times[:10]))
 
 if __name__ == "__main__":
     main()
