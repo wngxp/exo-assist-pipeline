@@ -1,0 +1,23 @@
+{
+  "model": "deprl_baseline",
+  "checkpoint_path": "baselines_DEPRL/myoLegWalk_20230514/myoLeg/checkpoints/step_150000000.pt",
+  "config_path": "baselines_DEPRL/myoLegWalk_20230514/myoLeg/config.yaml",
+  "env_id": "myoLegWalk-v0",
+  "n_episodes": 10,
+  "episode_lengths": [
+    1000,
+    1000,
+    1000,
+    1000,
+    33,
+    1000,
+    75,
+    1000,
+    1000,
+    1000
+  ],
+  "mean_episode_length": 810.8,
+  "min_episode_length": 33,
+  "max_episode_length": 1000,
+  "all_lengths_identical": false
+}

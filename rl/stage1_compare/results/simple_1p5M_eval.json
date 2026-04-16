@@ -1,0 +1,23 @@
+{
+  "evaluation_name": "simple_ppo_walker",
+  "model_path": "/home/wxp/repos/projects/exo-assist-pipeline/rl/rl_output/walker_policy_1p5M.zip",
+  "num_episodes": 10,
+  "deterministic": true,
+  "episode_lengths": [
+    68,
+    68,
+    68,
+    68,
+    68,
+    68,
+    68,
+    68,
+    68,
+    68
+  ],
+  "mean_episode_length": 68.0,
+  "min_episode_length": 68,
+  "max_episode_length": 68,
+  "all_episode_lengths_identical": true,
+  "saved_at": "2026-04-15T13:28:11+08:00"
+}

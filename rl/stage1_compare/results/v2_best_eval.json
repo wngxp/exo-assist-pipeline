@@ -1,0 +1,27 @@
+{
+  "evaluation_name": "stage1_v2_best",
+  "model_path": "/home/wxp/repos/projects/exo-assist-pipeline/rl/rl_output/walker_stage1_v2_best/best_model.zip",
+  "num_episodes": 10,
+  "deterministic": true,
+  "episode_lengths": [
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25,
+    25
+  ],
+  "mean_episode_length": 25.0,
+  "min_episode_length": 25,
+  "max_episode_length": 25,
+  "all_episode_lengths_identical": true,
+  "saved_at": "2026-04-15T13:28:36+08:00",
+  "vecnormalize_path": "/home/wxp/repos/projects/exo-assist-pipeline/rl/rl_output/walker_policy_stage1_v2_vecnormalize.pkl",
+  "model_variant": "best",
+  "env_training": false,
+  "env_norm_reward": false
+}
