@@ -89,12 +89,19 @@ def resolve_render_size(model):
 
 
 def build_offscreen_renderer(sim, model, data, width, height):
-    if hasattr(sim, "render"):
+    sim_render = getattr(sim, "render", None)
+    if callable(sim_render):
         def render_frame():
             try:
-                frame = sim.render(width=width, height=height, mode="offscreen")
+                frame = sim_render(height=height, width=width, camera_id=0)
             except TypeError:
-                frame = sim.render(width=width, height=height)
+                try:
+                    frame = sim_render(height=height, width=width)
+                except TypeError:
+                    try:
+                        frame = sim_render(width=width, height=height, mode="offscreen")
+                    except TypeError:
+                        frame = sim_render(width, height)
             return _frame_to_uint8(frame)
 
         return render_frame
@@ -105,14 +112,22 @@ def build_offscreen_renderer(sim, model, data, width, height):
         mujoco = None
 
     if mujoco is not None:
-        renderer = mujoco.Renderer(model, height=height, width=width)
+        try:
+            raw_model = model
+            for attr in ("_model", "model"):
+                candidate = getattr(raw_model, attr, None)
+                if candidate is not None:
+                    raw_model = candidate
+            renderer = mujoco.Renderer(raw_model, height=height, width=width)
 
-        def render_frame():
-            renderer.update_scene(data)
-            frame = renderer.render()
-            return _frame_to_uint8(frame)
+            def render_frame():
+                renderer.update_scene(data)
+                frame = renderer.render()
+                return _frame_to_uint8(frame)
 
-        return render_frame
+            return render_frame
+        except Exception:
+            pass
 
     try:
         import mujoco_py
@@ -167,7 +182,7 @@ def save_video(frames):
 
 
 def main():
-    base_env = myogym.make(ENV_ID, reset_type="random")
+    base_env = myogym.make(ENV_ID, reset_type="init")
     env = wrap_deprl_env(base_env)
 
     try:
