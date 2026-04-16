@@ -179,8 +179,9 @@ def run_episode(model, env, render_frame):
     steps = 0
 
     while not done and steps < MAX_EPISODE_LENGTH:
-        action, _ = model.predict(obs, deterministic=True)
-        obs, reward, done, info = _normalize_step(env.step(action))
+        action = model(obs)
+        result = env.step(action)
+        obs, reward, done, info = _normalize_step(result)
         del reward, info
         steps += 1
         frames.append(render_frame())
@@ -198,7 +199,7 @@ def save_video(frames):
 
 
 def main():
-    base_env = myogym.make(ENV_ID, reset_type="init")
+    base_env = myogym.make(ENV_ID, reset_type="random")
     env = wrap_deprl_env(base_env)
 
     try:
