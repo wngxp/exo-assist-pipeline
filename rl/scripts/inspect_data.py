@@ -5,26 +5,19 @@ path = "data/addbiomechanics/train/No_Arm/vanderZee2022_Formatted_No_Arm/p1/p1.b
 dataset = nimble.biomechanics.SubjectOnDisk(path)
 
 print("Num trials:", dataset.getNumTrials())
-
 trial = 0
 print("Trial length:", dataset.getTrialLength(trial))
 
-skel = dataset.readSkel()
+# usually final processed pass = last pass
+num_passes = dataset.getNumProcessingPasses()
+print("Num processing passes:", num_passes)
 
-trial = 0
-num_frames = dataset.getTrialLength(trial)
+skel = dataset.readSkel(num_passes - 1)
+print("Num DOFs:", skel.getNumDofs())
 
-positions = []
-velocities = []
-
-for t in range(num_frames):
-    frame = dataset.readFrames(trial, t, 1)[0]
+for i in range(skel.getNumDofs()):
+    print(i, skel.getDof(i).getName())
     
-    positions.append(frame.pos)  # joint angles
-    velocities.append(frame.vel)
-
-import numpy as np
-positions = np.array(positions)
-velocities = np.array(velocities)
-
-print(positions.shape)
+frame = dataset.readFrames(trial, 0, 1, num_passes - 1)[0]
+print("pos shape:", len(frame.pos))
+print("vel shape:", len(frame.vel))
