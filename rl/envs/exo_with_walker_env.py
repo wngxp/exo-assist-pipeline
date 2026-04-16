@@ -18,6 +18,7 @@ class ExoWithWalkerSB3(gym.Env):
 
     metadata = {"render_modes": []}
     MAX_TORQUE = 12.0
+    TORQUE_SCALE = 0.25  # start small; curriculum can increase later
 
     def __init__(self, walker_path=None, max_steps=300):
         super().__init__()
@@ -215,11 +216,13 @@ class ExoWithWalkerSB3(gym.Env):
         # keep existing walking quality from MyoSuite
         walk_reward = float(base_reward)
 
-        # encourage smaller torques
-        energy_penalty = 0.003 * float(np.sum(action**2))
+        # compute penalties on effective (scaled) torque
+        eff_action = self.TORQUE_SCALE * action
+        eff_prev = self.TORQUE_SCALE * self.prev_torque
+        energy_penalty = 0.003 * float(np.sum(eff_action**2))
 
         # encourage smooth torques
-        jerk_penalty = 0.01 * float(np.sum((action - self.prev_torque) ** 2))
+        jerk_penalty = 0.01 * float(np.sum((eff_action - eff_prev) ** 2))
 
         return walk_reward + effort_bonus - energy_penalty - jerk_penalty
 
@@ -271,11 +274,13 @@ class ExoWithWalkerSB3(gym.Env):
         # clear previously applied generalized forces
         self.sim.data.qfrc_applied[:] = 0.0
 
-        # apply exo torques
+        # scale exo torques (small-authority curriculum)
+        tau_r = float(self.TORQUE_SCALE * action[0])
+        tau_l = float(self.TORQUE_SCALE * action[1])
         if self.hip_r_qvel is not None:
-            self.sim.data.qfrc_applied[self.hip_r_qvel] = float(action[0])
+            self.sim.data.qfrc_applied[self.hip_r_qvel] = tau_r
         if self.hip_l_qvel is not None:
-            self.sim.data.qfrc_applied[self.hip_l_qvel] = float(action[1])
+            self.sim.data.qfrc_applied[self.hip_l_qvel] = tau_l
 
         # walker chooses muscle action from the current last simulator state
         muscle_action, _ = self.walker.predict(self.walker_obs, deterministic=True)
@@ -294,6 +299,12 @@ class ExoWithWalkerSB3(gym.Env):
             current_effort = self.baseline_effort
 
         reward = self._compute_reward(action, base_reward, current_effort)
+
+        # strong penalty if we terminate early (protect the walker)
+        if done or self._terminated()[0]:
+            # penalize earlier failures more
+            early_frac = 1.0 - (self.step_count / float(self.max_steps))
+            reward -= 5.0 * max(0.0, early_frac)
 
         custom_terminated, custom_reason, custom_snapshot = self._terminated()
         terminated = done or custom_terminated
@@ -323,7 +334,7 @@ class ExoWithWalkerSB3(gym.Env):
                 (self.baseline_effort - current_effort)
                 / max(self.baseline_effort, 1e-6)
             ),
-            "mean_abs_torque": float(np.mean(np.abs(action))),
+            "mean_abs_torque": float(np.mean(np.abs(self.TORQUE_SCALE * action))),
             "env_done": bool(done),
             "custom_terminated": bool(custom_terminated),
             "termination_source": termination_source,
@@ -341,7 +352,7 @@ class ExoWithWalkerSB3(gym.Env):
                 f"step={self.step_count} "
                 f"base_reward={base_reward:.3f} "
                 f"effort={current_effort:.6f} "
-                f"|tau|={float(np.mean(np.abs(action))):.3f} "
+                f"|tau|={float(np.mean(np.abs(self.TORQUE_SCALE * action))):.3f} "
                 f"torso={float(custom_snapshot['torso_pitch']):.3f} "
                 f"pelvis_h={float(custom_snapshot['pelvis_height']):.3f}"
             )
