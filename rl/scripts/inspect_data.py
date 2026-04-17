@@ -26,5 +26,13 @@ for i, dof in enumerate(dofs):
     print(i, dof.getName())
     
 frame = dataset.readFrames(trial, 0, 1, num_passes - 1)[0]
-print("pos len:", len(frame.pos))
-print("vel len:", len(frame.vel))
+
+print("num processing passes on frame:", len(frame.processingPasses))
+pp = frame.processingPasses[num_passes - 1]
+
+print(type(pp))
+print(dir(pp))
+
+for name in dir(pp):
+    if not name.startswith("_"):
+        print(name)
