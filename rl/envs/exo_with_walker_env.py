@@ -3,6 +3,11 @@ import gymnasium as gym
 from gymnasium import spaces
 
 from rl.baselines.load_deprl_reference import load_deprl_reference, wrap_deprl_env
+from rl.mocap_study.envs.mocap_reference import MocapReference
+from rl.mocap_study.envs.reward_tracking import (
+    build_tracking_indices,
+    compute_tracking_reward,
+)
 
 
 class ExoWithWalkerSB3(gym.Env):
@@ -46,6 +51,18 @@ class ExoWithWalkerSB3(gym.Env):
         self.prev_torque = np.zeros(2, dtype=np.float32)
         self.walker_obs = obs
 
+        self.reference = MocapReference(
+            "rl/mocap_study/output/reference/trial0_normalized_cycles_with_phase.csv",
+            cycle_id=0,
+        )
+        self.track_idx = build_tracking_indices(self.reference.pos_cols)
+        self.phase = 0.0
+        self.gait_period = 1.0
+        print(
+            "Tracked ref columns:",
+            [self.reference.pos_cols[i] for i in self.track_idx],
+        )
+
         self._map_joints()
         self._map_root()
         self.baseline_effort = self._measure_baseline()
@@ -80,6 +97,12 @@ class ExoWithWalkerSB3(gym.Env):
         self.hip_l_qvel = None
         self.knee_r_qpos = None
         self.knee_l_qpos = None
+        self.ankle_r_qpos = None
+        self.ankle_l_qpos = None
+        self.knee_r_qvel = None
+        self.knee_l_qvel = None
+        self.ankle_r_qvel = None
+        self.ankle_l_qvel = None
 
         for i in range(self.model_mj.njnt):
             name = self.model_mj.joint(i).name.lower()
@@ -91,8 +114,16 @@ class ExoWithWalkerSB3(gym.Env):
                 self.hip_l_qvel = self.model_mj.jnt_dofadr[i]
             elif "knee" in name and "_r" in name:
                 self.knee_r_qpos = self.model_mj.jnt_qposadr[i]
+                self.knee_r_qvel = self.model_mj.jnt_dofadr[i]
             elif "knee" in name and "_l" in name:
                 self.knee_l_qpos = self.model_mj.jnt_qposadr[i]
+                self.knee_l_qvel = self.model_mj.jnt_dofadr[i]
+            elif "ankle" in name and "_r" in name:
+                self.ankle_r_qpos = self.model_mj.jnt_qposadr[i]
+                self.ankle_r_qvel = self.model_mj.jnt_dofadr[i]
+            elif "ankle" in name and "_l" in name:
+                self.ankle_l_qpos = self.model_mj.jnt_qposadr[i]
+                self.ankle_l_qvel = self.model_mj.jnt_dofadr[i]
 
         found = sum(
             x is not None
@@ -175,6 +206,39 @@ class ExoWithWalkerSB3(gym.Env):
             np.sin(phi_l),
             np.cos(phi_l),
         )
+    
+    def _get_current_q_dq_for_reference(self):
+        q = np.zeros(len(self.reference.pos_cols), dtype=np.float32)
+        dq = np.zeros(len(self.reference.vel_cols), dtype=np.float32)
+
+        joint_map = {
+            "hip_flexion_r": (self.hip_r_qpos, self.hip_r_qvel),
+            "knee_angle_r": (self.knee_r_qpos, self.knee_r_qvel),
+            "ankle_angle_r": (self.ankle_r_qpos, self.ankle_r_qvel),
+            "hip_flexion_l": (self.hip_l_qpos, self.hip_l_qvel),
+            "knee_angle_l": (self.knee_l_qpos, self.knee_l_qvel),
+            "ankle_angle_l": (self.ankle_l_qpos, self.ankle_l_qvel),
+        }
+
+        qpos = self.sim.data.qpos
+        qvel = self.sim.data.qvel
+
+        for i, col in enumerate(self.reference.pos_cols):
+            joint_name = col.replace("pos_", "")
+            if joint_name in joint_map:
+                qpos_idx, _ = joint_map[joint_name]
+                if qpos_idx is not None:
+                    q[i] = qpos[qpos_idx]
+
+        for i, col in enumerate(self.reference.vel_cols):
+            joint_name = col.replace("vel_", "")
+            if joint_name in joint_map:
+                _, qvel_idx = joint_map[joint_name]
+                if qvel_idx is not None:
+                    dq[i] = qvel[qvel_idx]
+
+        return q, dq
+    
 
     def _get_obs(self):
         obs = np.zeros(12, dtype=np.float32)
@@ -206,7 +270,7 @@ class ExoWithWalkerSB3(gym.Env):
         obs[11] = self.prev_torque[1] / self.MAX_TORQUE
         return obs
 
-    def _compute_reward(self, action, base_reward, current_effort):
+    def _compute_reward(self, action, base_reward, current_effort, track_terms):
         # rough effort reduction proxy
         effort_reduction = (self.baseline_effort - current_effort) / max(
             self.baseline_effort, 1e-6
@@ -224,7 +288,15 @@ class ExoWithWalkerSB3(gym.Env):
         # encourage smooth torques
         jerk_penalty = 0.01 * float(np.sum((eff_action - eff_prev) ** 2))
 
-        return walk_reward + effort_bonus - energy_penalty - jerk_penalty
+        track_bonus = 2.0 * track_terms["r_track"]
+
+        return (
+            walk_reward
+            + effort_bonus
+            + track_bonus
+            - energy_penalty
+            - jerk_penalty
+        )
 
     def _terminated(self):
         qpos = self.sim.data.qpos
@@ -259,6 +331,7 @@ class ExoWithWalkerSB3(gym.Env):
         self.sim = self.base_env.unwrapped.sim
         self.prev_torque[:] = 0.0
         self.step_count = 0
+        self.phase = 0.0
 
         self.last_done = False
         self.last_custom_terminated = False
@@ -298,7 +371,28 @@ class ExoWithWalkerSB3(gym.Env):
         else:
             current_effort = self.baseline_effort
 
-        reward = self._compute_reward(action, base_reward, current_effort)
+        dt = float(self.model_mj.opt.timestep)
+        self.phase = (self.phase + dt / self.gait_period) % 1.0
+
+        ref = self.reference.get(self.phase)
+        q_ref = ref["pos"]
+        dq_ref = ref["vel"]
+
+        q_cur, dq_cur = self._get_current_q_dq_for_reference()
+        track_terms = compute_tracking_reward(
+            q=q_cur,
+            dq=dq_cur,
+            q_ref=q_ref,
+            dq_ref=dq_ref,
+            track_idx=self.track_idx,
+        )
+
+        reward = self._compute_reward(
+            action,
+            base_reward,
+            current_effort,
+            track_terms,
+        )
 
         # strong penalty if we terminate early (protect the walker)
         if done or self._terminated()[0]:
@@ -335,6 +429,13 @@ class ExoWithWalkerSB3(gym.Env):
                 / max(self.baseline_effort, 1e-6)
             ),
             "mean_abs_torque": float(np.mean(np.abs(self.TORQUE_SCALE * action))),
+            "phase": float(self.phase),
+            "ref_index": int(ref["index"]),
+            "r_pos_track": float(track_terms["r_pos"]),
+            "r_vel_track": float(track_terms["r_vel"]),
+            "r_track": float(track_terms["r_track"]),
+            "q_err_norm": float(track_terms["q_err_norm"]),
+            "dq_err_norm": float(track_terms["dq_err_norm"]),
             "env_done": bool(done),
             "custom_terminated": bool(custom_terminated),
             "termination_source": termination_source,
