@@ -24,6 +24,7 @@ class ExoWithWalkerSB3(gym.Env):
     metadata = {"render_modes": []}
     MAX_TORQUE = 12.0
     TORQUE_SCALE = 0.25  # start small; curriculum can increase later
+    ENV_VERSION = "mocap_tracking_v1"
 
     def __init__(self, walker_path=None, max_steps=300):
         super().__init__()
@@ -429,6 +430,7 @@ class ExoWithWalkerSB3(gym.Env):
                 / max(self.baseline_effort, 1e-6)
             ),
             "mean_abs_torque": float(np.mean(np.abs(self.TORQUE_SCALE * action))),
+            "env_version": self.ENV_VERSION,
             "phase": float(self.phase),
             "ref_index": int(ref["index"]),
             "r_pos_track": float(track_terms["r_pos"]),
@@ -459,6 +461,10 @@ class ExoWithWalkerSB3(gym.Env):
             )
 
         self.prev_torque = action.copy()
+        if "phase" not in info or "env_version" not in info:
+            raise RuntimeError(
+                f"Expected mocap tracking info keys missing. info keys={sorted(info.keys())}"
+            )
         return self._get_obs(), reward, terminated, truncated, info
 
     def close(self):
