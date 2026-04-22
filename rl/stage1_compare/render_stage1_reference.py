@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import sys
 from pathlib import Path
 
 # Headless offscreen rendering setup for remote Linux machines.
@@ -14,9 +13,6 @@ import imageio.v2 as imageio
 import myosuite  # noqa: F401
 import numpy as np
 from myosuite.utils import gym as myogym
-
-if __package__ in {None, ""}:
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from rl.baselines.load_deprl_reference import load_deprl_reference, wrap_deprl_env
 

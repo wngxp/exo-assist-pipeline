@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 from pathlib import Path
 
@@ -7,9 +6,6 @@ import torch.nn as nn
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
-
-if __package__ in {None, ""}:
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from rl.baselines.load_deprl_reference import BASELINE_DIR
 from rl.envs.exo_with_walker_env import ExoWithWalkerSB3

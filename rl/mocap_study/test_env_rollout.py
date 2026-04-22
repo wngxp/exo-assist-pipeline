@@ -19,8 +19,8 @@ for i in range(100):
     # Store values each step
     log.append({
         "r_track": info.get("r_track", 0.0),
-        "r_pos": info.get("r_pos_track", 0.0),
-        "r_vel": info.get("r_vel_track", 0.0),
+        "r_pos": info.get("r_pos", 0.0),
+        "r_vel": info.get("r_vel", 0.0),
         "q_err": info.get("q_err_norm", 0.0),
         "dq_err": info.get("dq_err_norm", 0.0),
         "phase": info.get("phase", 0.0),

@@ -1,6 +1,5 @@
 from rl.mocap_study.envs.mocap_reference import MocapReference
 from rl.mocap_study.envs.reward_tracking import build_tracking_indices, compute_tracking_reward
-import numpy as np
 
 ref = MocapReference(
     "rl/mocap_study/output/reference/trial0_normalized_cycles_with_phase.csv",

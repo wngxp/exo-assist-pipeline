@@ -21,10 +21,12 @@ def build_tracking_indices(ref_pos_cols):
 
 
 def compute_tracking_reward(q, dq, q_ref, dq_ref, track_idx):
-    q = np.asarray(q)
-    dq = np.asarray(dq)
-    q_ref = np.asarray(q_ref)
-    dq_ref = np.asarray(dq_ref)
+    q = np.asarray(q, dtype=np.float64)
+    dq = np.asarray(dq, dtype=np.float64)
+    q_ref = np.asarray(q_ref, dtype=np.float64)
+    dq_ref = np.asarray(dq_ref, dtype=np.float64)
+
+    track_idx = np.asarray(track_idx, dtype=np.int64)
 
     q_err = q[track_idx] - q_ref[track_idx]
     dq_err = dq[track_idx] - dq_ref[track_idx]
@@ -40,3 +42,26 @@ def compute_tracking_reward(q, dq, q_ref, dq_ref, track_idx):
         "q_err_norm": float(np.linalg.norm(q_err)),
         "dq_err_norm": float(np.linalg.norm(dq_err)),
     }
+
+
+def compute_total_reward(q, dq, q_ref, dq_ref, track_idx, action, is_alive):
+    r_dict = compute_tracking_reward(q, dq, q_ref, dq_ref, track_idx)
+
+    r_track = r_dict["r_track"]
+
+    r_alive = 1.0 if is_alive else -10.0
+    r_ctrl = -0.001 * np.sum(np.square(action))
+
+    r_total = (
+        1.0 * r_track +
+        1.0 * r_alive +
+        r_ctrl
+    )
+
+    r_dict.update({
+        "r_alive": float(r_alive),
+        "r_ctrl": float(r_ctrl),
+        "r_total": float(r_total),
+    })
+
+    return r_dict

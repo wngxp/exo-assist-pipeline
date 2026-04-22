@@ -1,12 +1,8 @@
 import os
-import sys
 from pathlib import Path
 
 import numpy as np
 from stable_baselines3 import PPO
-
-if __package__ in {None, ""}:
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from rl.baselines.load_deprl_reference import (
     BASELINE_DIR,
