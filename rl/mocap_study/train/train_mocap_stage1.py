@@ -5,10 +5,10 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList
 
-from rl.envs.exo_with_walker_env import ExoWithWalkerSB3
+from rl.mocap_study.envs import MocapWalkerEnv
 
 
-RUN_NAME = "mocap_stage1_ppo_v1"
+RUN_NAME = "mocap_stage1_walker_ppo_v1"
 BASE_DIR = Path("rl/mocap_study/output/training") / RUN_NAME
 LOG_DIR = BASE_DIR / "logs"
 CKPT_DIR = BASE_DIR / "checkpoints"
@@ -17,7 +17,7 @@ FINAL_MODEL_PATH = BASE_DIR / "final_model"
 
 
 def make_env():
-    env = ExoWithWalkerSB3()
+    env = MocapWalkerEnv()
     env = Monitor(env)
     return env
 
@@ -51,7 +51,7 @@ def main():
     checkpoint_callback = CheckpointCallback(
         save_freq=10_000,
         save_path=str(CKPT_DIR),
-        name_prefix="ppo_mocap_stage1",
+        name_prefix="ppo_mocap_stage1_walker",
         save_replay_buffer=False,
         save_vecnormalize=False,
     )
@@ -73,6 +73,7 @@ def main():
     print(f"Starting training: {RUN_NAME}")
     print(f"Output dir: {BASE_DIR}")
     print(f"Total timesteps: {total_timesteps}")
+    print("Environment: MocapWalkerEnv (walker-only, no exo, no DEP-RL)")
 
     model.learn(
         total_timesteps=total_timesteps,
