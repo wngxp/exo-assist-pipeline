@@ -32,7 +32,11 @@ class MocapWalkerEnv(gym.Env):
 
         self.base_env = myogym.make("myoLegWalk-v0")
         self.env = self.base_env
-        self.env.reset()
+        reset_out = self.env.reset()
+        if isinstance(reset_out, tuple):
+            base_obs = reset_out[0]
+        else:
+            base_obs = reset_out
 
         self.sim = self.base_env.unwrapped.sim
         self.model_mj = self.sim.model
@@ -48,11 +52,15 @@ class MocapWalkerEnv(gym.Env):
         self._map_joints()
         self._map_root()
 
+        self.base_obs_dim = int(np.asarray(base_obs, dtype=np.float32).shape[0])
+        self.extra_obs_dim = 15
+        self.last_base_obs = np.asarray(base_obs, dtype=np.float32)
+
         self.action_space = self.env.action_space
         self.observation_space = spaces.Box(
             low=-np.inf,
             high=np.inf,
-            shape=(10,),
+            shape=(self.base_obs_dim + self.extra_obs_dim,),
             dtype=np.float32,
         )
 
@@ -172,30 +180,44 @@ class MocapWalkerEnv(gym.Env):
         return q, dq
 
     def _get_obs(self):
-        obs = np.zeros(10, dtype=np.float32)
         qpos = self.sim.data.qpos
         qvel = self.sim.data.qvel
 
+        extra = np.zeros(self.extra_obs_dim, dtype=np.float32)
+
         sin_phi_r, cos_phi_r, sin_phi_l, cos_phi_l = self._estimate_phase()
-        obs[0] = sin_phi_r
-        obs[1] = cos_phi_r
-        obs[2] = sin_phi_l
-        obs[3] = cos_phi_l
+        extra[0] = sin_phi_r
+        extra[1] = cos_phi_r
+        extra[2] = sin_phi_l
+        extra[3] = cos_phi_l
 
         if self.hip_r_qpos is not None:
-            obs[4] = qpos[self.hip_r_qpos]
+            extra[4] = qpos[self.hip_r_qpos]
         if self.hip_l_qpos is not None:
-            obs[5] = qpos[self.hip_l_qpos]
-        if self.hip_r_qvel is not None:
-            obs[6] = qvel[self.hip_r_qvel]
-        if self.hip_l_qvel is not None:
-            obs[7] = qvel[self.hip_l_qvel]
-        if self.root_x_qvel is not None and self.root_x_qvel < len(qvel):
-            obs[8] = qvel[self.root_x_qvel]
-        if self.torso_pitch_qpos is not None:
-            obs[9] = qpos[self.torso_pitch_qpos]
+            extra[5] = qpos[self.hip_l_qpos]
+        if self.knee_r_qpos is not None:
+            extra[6] = qpos[self.knee_r_qpos]
+        if self.knee_l_qpos is not None:
+            extra[7] = qpos[self.knee_l_qpos]
+        if self.ankle_r_qpos is not None:
+            extra[8] = qpos[self.ankle_r_qpos]
+        if self.ankle_l_qpos is not None:
+            extra[9] = qpos[self.ankle_l_qpos]
 
-        return obs
+        if self.hip_r_qvel is not None:
+            extra[10] = qvel[self.hip_r_qvel]
+        if self.hip_l_qvel is not None:
+            extra[11] = qvel[self.hip_l_qvel]
+        if self.root_x_qvel is not None and self.root_x_qvel < len(qvel):
+            extra[12] = qvel[self.root_x_qvel]
+        if self.torso_pitch_qpos is not None:
+            extra[13] = qpos[self.torso_pitch_qpos]
+        if self.pelvis_height_qpos is not None:
+            extra[14] = qpos[self.pelvis_height_qpos]
+
+        return np.concatenate(
+            [self.last_base_obs.astype(np.float32, copy=False), extra], axis=0
+        )
 
     def _terminated(self):
         qpos = self.sim.data.qpos
@@ -224,13 +246,20 @@ class MocapWalkerEnv(gym.Env):
         del options
 
         try:
-            self.env.reset(seed=seed)
+            reset_out = self.env.reset(seed=seed)
         except TypeError:
-            self.env.reset()
+            reset_out = self.env.reset()
+
+        if isinstance(reset_out, tuple):
+            base_obs = reset_out[0]
+        else:
+            base_obs = reset_out
 
         self.sim = self.base_env.unwrapped.sim
         self.step_count = 0
         self.phase = 0.0
+
+        self.last_base_obs = np.asarray(base_obs, dtype=np.float32)
 
         return self._get_obs(), {}
 
@@ -240,7 +269,8 @@ class MocapWalkerEnv(gym.Env):
             np.float32
         )
 
-        _, base_reward, env_done, _ = self._normalize_step(self.env.step(action))
+        base_obs, base_reward, env_done, _ = self._normalize_step(self.env.step(action))
+        self.last_base_obs = np.asarray(base_obs, dtype=np.float32)
 
         self.step_count += 1
 
