@@ -1,0 +1,88 @@
+[experiment]
+name = "humanoid_walk_baseline"
+task = "humanoid_walk"
+seed = 7
+tags = ["baseline", "scaffold", "walking"]
+
+[runtime]
+backend = "scaffold"
+mode = "dry_run"
+device = "cpu"
+headless = true
+dt = 0.02
+
+[paths]
+data_root = "data"
+output_root = "outputs"
+
+[train]
+iterations = 1
+rollout_steps = 128
+checkpoint_interval = 1
+
+[eval]
+episodes = 2
+steps_per_episode = 96
+
+[render]
+frames = 48
+camera = "follow"
+
+[task]
+name = "humanoid_walk"
+nominal_base_height = 0.92
+step_frequency_hz = 1.8
+
+[task.action]
+dimension = 12
+scale = 0.25
+clamp = 1.0
+joints = [
+  "hip_pitch_left",
+  "hip_roll_left",
+  "hip_yaw_left",
+  "knee_left",
+  "ankle_left",
+  "toe_left",
+  "hip_pitch_right",
+  "hip_roll_right",
+  "hip_yaw_right",
+  "knee_right",
+  "ankle_right",
+  "toe_right",
+]
+
+[task.observation]
+features = [
+  "base_height",
+  "forward_velocity",
+  "lateral_velocity",
+  "yaw_rate",
+  "torso_upright",
+  "foot_clearance",
+  "target_velocity_error",
+  "previous_action_mean",
+]
+include_gait_phase = false
+include_reference_tracking = false
+
+[task.reward]
+target_forward_velocity = 1.25
+target_foot_clearance = 0.08
+
+[task.reward.weights]
+forward_velocity_tracking = 1.0
+upright_posture = 0.4
+foot_clearance = 0.1
+action_rate = 0.05
+survival = 0.05
+
+[task.termination]
+max_steps = 256
+min_base_height = 0.72
+min_upright = 0.60
+
+[task.future]
+enable_mocap_reference = false
+enable_gait_phase_features = false
+enable_residual_exo = false
