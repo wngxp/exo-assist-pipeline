@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from rl_isaac.tasks.humanoid_walk.env import HumanoidWalkState
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class RewardBreakdown:
     raw_terms: dict[str, float]
     weighted_terms: dict[str, float]

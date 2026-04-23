@@ -4,13 +4,13 @@ from dataclasses import dataclass
 from typing import Mapping, Protocol
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class MocapFrame:
     time_s: float
     joint_targets: dict[str, float]
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class MocapSequence:
     sequence_id: str
     frames: tuple[MocapFrame, ...]

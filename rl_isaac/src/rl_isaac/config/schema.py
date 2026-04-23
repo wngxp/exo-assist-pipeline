@@ -7,7 +7,7 @@ from typing import Any
 from rl_isaac.tasks.humanoid_walk.config import HumanoidWalkTaskConfig
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ExperimentConfig:
     name: str
     task: str
@@ -15,7 +15,7 @@ class ExperimentConfig:
     tags: tuple[str, ...]
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class RuntimeConfig:
     backend: str
     mode: str
@@ -24,7 +24,7 @@ class RuntimeConfig:
     dt: float
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class PathsConfig:
     project_root: Path
     config_path: Path
@@ -32,26 +32,26 @@ class PathsConfig:
     output_root: Path
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class TrainConfig:
     iterations: int
     rollout_steps: int
     checkpoint_interval: int
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class EvalConfig:
     episodes: int
     steps_per_episode: int
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class RenderConfig:
     frames: int
     camera: str
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ProjectConfig:
     experiment: ExperimentConfig
     runtime: RuntimeConfig

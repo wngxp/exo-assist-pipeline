@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class GaitPhaseFeatures:
     phase: float
     sin_phase: float

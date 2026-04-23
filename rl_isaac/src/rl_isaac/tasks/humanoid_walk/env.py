@@ -14,7 +14,7 @@ from rl_isaac.tasks.humanoid_walk.rewards import compute_reward
 from rl_isaac.tasks.humanoid_walk.termination import check_termination
 
 
-@dataclass(slots=True)
+@dataclass
 class HumanoidWalkState:
     step_index: int = 0
     time_s: float = 0.0
@@ -38,7 +38,7 @@ class HumanoidWalkState:
         }
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class StepResult:
     observation: dict[str, float]
     reward: float
@@ -48,7 +48,7 @@ class StepResult:
     info: dict[str, Any]
 
 
-@dataclass(slots=True)
+@dataclass
 class HumanoidWalkEnv:
     config: HumanoidWalkTaskConfig
     dt: float

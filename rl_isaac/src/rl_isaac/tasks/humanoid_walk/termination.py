@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from rl_isaac.tasks.humanoid_walk.env import HumanoidWalkState
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class TerminationStatus:
     terminated: bool
     reason: str | None

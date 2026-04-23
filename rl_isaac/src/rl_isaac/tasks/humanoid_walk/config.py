@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ActionConfig:
     dimension: int
     scale: float
@@ -20,7 +20,7 @@ class ActionConfig:
         }
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ObservationConfig:
     features: tuple[str, ...]
     include_gait_phase: bool
@@ -34,7 +34,7 @@ class ObservationConfig:
         }
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class RewardConfig:
     weights: dict[str, float]
     target_forward_velocity: float
@@ -48,7 +48,7 @@ class RewardConfig:
         }
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class TerminationConfig:
     max_steps: int
     min_base_height: float
@@ -62,7 +62,7 @@ class TerminationConfig:
         }
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class FutureFeaturesConfig:
     enable_mocap_reference: bool
     enable_gait_phase_features: bool
@@ -76,7 +76,7 @@ class FutureFeaturesConfig:
         }
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class HumanoidWalkTaskConfig:
     name: str
     nominal_base_height: float

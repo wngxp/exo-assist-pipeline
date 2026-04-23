@@ -8,7 +8,7 @@ from rl_isaac.tasks.humanoid_walk.env import HumanoidWalkEnv
 PolicyFn = Callable[[Mapping[str, float], int], Sequence[float]]
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class RolloutFrame:
     step_index: int
     action: list[float]
