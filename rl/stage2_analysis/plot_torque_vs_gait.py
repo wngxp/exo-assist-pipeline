@@ -1,3 +1,25 @@
+"""Plot Stage 2 torque traces against an inferred gait phase.
+
+Purpose:
+- read the saved Stage 2 evaluation rollout
+- infer gait-cycle boundaries from the right-hip velocity trace
+- produce a torque-vs-phase figure and a small JSON summary
+
+Inputs:
+- `rl/rl_output/stage2/eval/stage2_eval_rollout.npz`
+
+Outputs:
+- `rl/rl_output/analysis/stage2_torque_vs_gait_v2.png`
+- `rl/rl_output/analysis/stage2_torque_vs_gait_v2_summary.json`
+
+Command:
+- `python rl/stage2_analysis/plot_torque_vs_gait.py`
+
+Status:
+- partial
+- useful as post-hoc inspection of a saved rollout, not as proof of robust gait
+"""
+
 from __future__ import annotations
 
 import json

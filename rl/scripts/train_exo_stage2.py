@@ -1,3 +1,27 @@
+"""Stage 2 PPO training for bilateral hip-exoskeleton torques.
+
+Purpose:
+- keep the DEP-RL walker frozen
+- train a small SB3 PPO policy that adds bilateral hip torques
+
+Inputs:
+- local DEP-RL baseline under `rl/baselines_DEPRL/`
+- derived mocap reference CSV under `data/mocap_reference/`
+
+Outputs:
+- `rl/rl_output/stage2/exo_policy.zip`
+- `rl/rl_output/stage2/best/`
+- `rl/rl_output/stage2/checkpoints/`
+
+Command:
+- `python rl/scripts/train_exo_stage2.py`
+
+Status:
+- partial
+- preserves the surviving experiment path, but does not prove stable or
+  validated exoskeleton assistance
+"""
+
 import os
 import time
 from pathlib import Path

@@ -1,3 +1,25 @@
+"""Direct DEP-RL baseline evaluation for Stage 1 comparison.
+
+Purpose:
+- evaluate the local DEP-RL walker baseline without exoskeleton control
+- save comparison-ready episode-length summaries
+
+Inputs:
+- `rl/baselines_DEPRL/myoLegWalk_20230514/myoLeg/checkpoints/step_150000000.pt`
+- `rl/baselines_DEPRL/myoLegWalk_20230514/myoLeg/config.yaml`
+
+Outputs:
+- `rl/rl_output/stage1/compare/deprl_eval.json`
+- `rl/rl_output/stage1/compare/deprl_episode_lengths.csv`
+
+Command:
+- `python rl/stage1_compare/eval_stage1_deprl.py`
+
+Status:
+- working on the original Linux setup
+- kept because it is still a clear comparison/evaluation utility
+"""
+
 from __future__ import annotations
 
 import csv

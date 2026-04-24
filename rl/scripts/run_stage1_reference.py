@@ -1,4 +1,25 @@
-"""Official Stage 1 reference evaluation using DEP-RL baseline"""
+"""Stage 1 DEP-RL reference evaluation.
+
+Purpose:
+- load the local DEP-RL `myoLegWalk-v0` baseline
+- run fixed evaluation episodes
+- save a simple episode-length summary
+
+Inputs:
+- `rl/baselines_DEPRL/myoLegWalk_20230514/myoLeg/checkpoints/step_150000000.pt`
+- `rl/baselines_DEPRL/myoLegWalk_20230514/myoLeg/config.yaml`
+
+Outputs:
+- `rl/rl_output/stage1/reference/stage1_reference.json`
+- `rl/rl_output/stage1/reference/stage1_reference_lengths.csv`
+
+Command:
+- `python rl/scripts/run_stage1_reference.py`
+
+Status:
+- working on the original Linux setup
+- not locally verified during this Mac cleanup pass
+"""
 
 from __future__ import annotations
 

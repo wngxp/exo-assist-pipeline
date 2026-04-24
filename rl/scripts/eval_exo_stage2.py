@@ -1,3 +1,25 @@
+"""Stage 2 evaluation for walker-only vs walker-plus-exoskeleton rollouts.
+
+Purpose:
+- compare the frozen walker against the saved Stage 2 exo policy
+- save a rollout trace for later analysis
+
+Inputs:
+- local DEP-RL baseline under `rl/baselines_DEPRL/`
+- saved Stage 2 policy under `rl/rl_output/stage2/`
+- derived mocap reference CSV under `data/mocap_reference/`
+
+Outputs:
+- `rl/rl_output/stage2/eval/stage2_eval_rollout.npz`
+
+Command:
+- `python rl/scripts/eval_exo_stage2.py`
+
+Status:
+- partial
+- useful for inspection, but not evidence that exoskeleton assistance is solved
+"""
+
 import os
 from pathlib import Path
 

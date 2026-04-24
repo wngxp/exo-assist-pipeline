@@ -1,3 +1,25 @@
+"""Render the DEP-RL stage-1 reference walker to video.
+
+Purpose:
+- load the local DEP-RL baseline
+- capture an offscreen rollout
+- save a reference MP4 for handoff/demo purposes
+
+Inputs:
+- local DEP-RL baseline under `rl/baselines_DEPRL/`
+
+Outputs:
+- `rl/rl_output/stage1/reference/stage1_reference.mp4`
+
+Command:
+- `python rl/stage1_compare/render_stage1_reference.py`
+
+Status:
+- partial
+- useful for visualization, but render success still depends on the original
+  MuJoCo/OpenGL setup
+"""
+
 from __future__ import annotations
 
 import os

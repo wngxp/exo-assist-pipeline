@@ -1,12 +1,40 @@
-import numpy as np
+"""Stage 2 exoskeleton environment layered on top of the frozen DEP-RL walker.
+
+Purpose:
+- keep the frozen DEP-RL walker as the locomotion controller
+- add small bilateral hip torques from a learned exoskeleton policy
+- use a derived mocap reference snapshot as a shaping signal
+
+Inputs:
+- local DEP-RL baseline under `rl/baselines_DEPRL/`
+- derived mocap reference CSV under `data/mocap_reference/`
+
+Outputs:
+- consumed indirectly by `rl/scripts/train_exo_stage2.py`
+- consumed indirectly by `rl/scripts/eval_exo_stage2.py`
+
+Command:
+- imported by the Stage 2 scripts rather than run directly
+
+Status:
+- partial
+- useful as the surviving experiment environment, but not evidence of solved
+  human-like walking or validated exoskeleton assistance
+"""
+
+from pathlib import Path
+
 import gymnasium as gym
+import numpy as np
 from gymnasium import spaces
 
 from rl.baselines.load_deprl_reference import load_deprl_reference, wrap_deprl_env
-from rl.mocap_study.envs.mocap_reference import MocapReference
-from rl.mocap_study.envs.reward_tracking import (
-    build_tracking_indices,
-    compute_tracking_reward,
+from rl.reference.mocap_reference import MocapReference
+from rl.reference.reward_tracking import build_tracking_indices, compute_tracking_reward
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_REFERENCE_PATH = (
+    REPO_ROOT / "data" / "mocap_reference" / "trial0_normalized_cycles_with_phase.csv"
 )
 
 
@@ -52,10 +80,7 @@ class ExoWithWalkerSB3(gym.Env):
         self.prev_torque = np.zeros(2, dtype=np.float32)
         self.walker_obs = obs
 
-        self.reference = MocapReference(
-            "rl/mocap_study/output/reference/trial0_normalized_cycles_with_phase.csv",
-            cycle_id=0,
-        )
+        self.reference = MocapReference(str(DEFAULT_REFERENCE_PATH), cycle_id=0)
         self.track_idx = build_tracking_indices(self.reference.pos_cols)
         self.phase = 0.0
         self.gait_period = 1.0
